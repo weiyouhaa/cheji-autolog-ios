@@ -168,6 +168,31 @@ final class VehicleStore: ObservableObject {
         showToast("🧭 已记录「\(trip.scenario)」+\(trip.distanceKm)km · 实测能耗 \(trip.consumption)\(car.consumptionUnit)")
     }
 
+    // MARK: - Iteration 05: Timeline CRUD (Update & Delete Events)
+    func updateTimelineEvent(id: UUID, title: String, cost: String, odo: String) {
+        var car = currentVehicle
+        if let idx = car.timeline.firstIndex(where: { $0.id == id }) {
+            car.timeline[idx].title = title
+            car.timeline[idx].cost = cost
+            car.timeline[idx].odo = odo
+            currentVehicle = car
+            showToast("✅ 已更新「\(title)」账单明细")
+        }
+    }
+
+    func deleteTimelineEvent(id: UUID) {
+        var car = currentVehicle
+        guard car.timeline.count > 1 else {
+            showToast("⚠️ 至少保留 1 条初始建档记录")
+            return
+        }
+        if let idx = car.timeline.firstIndex(where: { $0.id == id }) {
+            let removed = car.timeline.remove(at: idx)
+            currentVehicle = car
+            showToast("🗑️ 已删除记录：\(removed.title)")
+        }
+    }
+
     // MARK: - 1. Add Fuel / Charging Log
     func submitFuelLog(odo: Int, cost: Double, price: Double, subType: String, isFullTank: Bool, stationNote: String) {
         var car = currentVehicle

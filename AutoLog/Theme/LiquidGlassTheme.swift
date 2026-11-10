@@ -254,10 +254,12 @@ struct CarSilhouetteView: View {
     }
 }
 
-// MARK: - Reusable Timeline Node View
+// MARK: - Reusable Timeline Node View (Iteration 05 Interactive CRUD)
 struct TimelineNodeView: View {
+    @EnvironmentObject var store: VehicleStore
     let event: TimelineEvent
     let isLast: Bool
+    @State private var showInspector = false
 
     var dotColor: Color {
         AutoColor.fromName(event.color)
@@ -283,57 +285,164 @@ struct TimelineNodeView: View {
             }
             .frame(width: 12)
 
-            // Right card
-            VStack(alignment: .leading, spacing: 6) {
-                HStack(alignment: .firstTextBaseline) {
-                    Text(event.title)
-                        .font(.system(size: 13.5, weight: .bold))
-                        .lineLimit(1)
-                    Spacer()
-                    Text(event.cost)
-                        .font(.system(size: 13.5, weight: .heavy, design: .rounded))
-                        .monospacedDigit()
-                }
+            // Right card (Tappable to Inspect / Edit / Delete)
+            Button {
+                showInspector = true
+            } label: {
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack(alignment: .firstTextBaseline) {
+                        Text(event.title)
+                            .font(.system(size: 13.5, weight: .bold))
+                            .lineLimit(1)
+                        Spacer()
+                        Text(event.cost)
+                            .font(.system(size: 13.5, weight: .heavy, design: .rounded))
+                            .monospacedDigit()
+                    }
 
-                HStack(spacing: 6) {
-                    Text("📅 \(event.date)")
-                    Text("·")
-                    Text("🛣️ \(event.odo)")
-                    Text("·")
-                    Text("#\(event.cat)")
-                        .fontWeight(.bold)
-                        .foregroundStyle(dotColor)
-                }
-                .font(.system(size: 11))
-                .foregroundStyle(.secondary)
-                .monospacedDigit()
+                    HStack(spacing: 6) {
+                        Text("📅 \(event.date)")
+                        Text("·")
+                        Text("🛣️ \(event.odo)")
+                        Text("·")
+                        Text("#\(event.cat)")
+                            .fontWeight(.bold)
+                            .foregroundStyle(dotColor)
+                        Spacer()
+                        Text("编辑 ›")
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundStyle(.tertiary)
+                    }
+                    .font(.system(size: 11))
+                    .foregroundStyle(.secondary)
+                    .monospacedDigit()
 
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 5) {
-                        ForEach(event.tags, id: \.self) { tag in
-                            Text(tag)
-                                .font(.system(size: 10, weight: .semibold))
-                                .foregroundStyle(.secondary)
-                                .padding(.horizontal, 7)
-                                .padding(.vertical, 3)
-                                .background(
-                                    Capsule(style: .continuous)
-                                        .fill(Color.primary.opacity(0.07))
-                                )
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 5) {
+                            ForEach(event.tags, id: \.self) { tag in
+                                Text(tag)
+                                    .font(.system(size: 10, weight: .semibold))
+                                    .foregroundStyle(.secondary)
+                                    .padding(.horizontal, 7)
+                                    .padding(.vertical, 3)
+                                    .background(
+                                        Capsule(style: .continuous)
+                                            .fill(Color.primary.opacity(0.07))
+                                    )
+                            }
                         }
                     }
                 }
+                .padding(11)
+                .background(
+                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        .fill(Color.primary.opacity(0.04))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                .strokeBorder(Color.white.opacity(0.14), lineWidth: 1)
+                        )
+                )
             }
-            .padding(11)
-            .background(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .fill(Color.primary.opacity(0.04))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 18, style: .continuous)
-                            .strokeBorder(Color.white.opacity(0.14), lineWidth: 1)
-                    )
-            )
+            .buttonStyle(.plain)
             .padding(.bottom, isLast ? 2 : 10)
         }
+        .sheet(isPresented: $showInspector) {
+            TimelineEventInspectorSheet(event: event)
+                .environmentObject(store)
+                .presentationDetents([.height(350)])
+                .presentationCornerRadius(32)
+        }
+    }
+}
+
+struct TimelineEventInspectorSheet: View {
+    @EnvironmentObject var store: VehicleStore
+    @Environment(\.dismiss) private var dismiss
+    let event: TimelineEvent
+
+    @State private var title: String = ""
+    @State private var cost: String = ""
+    @State private var odo: String = ""
+
+    var body: some View {
+        NavigationStack {
+            ZStack {
+                SpatialMeshBackground(isDark: store.isDarkMode)
+
+                VStack(alignment: .leading, spacing: 12) {
+                    VStack(spacing: 10) {
+                        HStack {
+                            Text("项目名称")
+                                .font(.system(size: 11, weight: .bold))
+                                .foregroundStyle(.secondary)
+                                .frame(width: 68, alignment: .leading)
+                            TextField("", text: $title)
+                                .font(.system(size: 13.5, weight: .bold))
+                        }
+                        Divider()
+                        HStack {
+                            Text("记账金额")
+                                .font(.system(size: 11, weight: .bold))
+                                .foregroundStyle(.secondary)
+                                .frame(width: 68, alignment: .leading)
+                            TextField("", text: $cost)
+                                .font(.system(size: 13.5, weight: .bold, design: .rounded))
+                        }
+                        Divider()
+                        HStack {
+                            Text("记录里程")
+                                .font(.system(size: 11, weight: .bold))
+                                .foregroundStyle(.secondary)
+                                .frame(width: 68, alignment: .leading)
+                            TextField("", text: $odo)
+                                .font(.system(size: 13.5, weight: .bold, design: .rounded))
+                        }
+                    }
+                    .liquidGlassCard(cornerRadius: 24)
+
+                    HStack(spacing: 10) {
+                        Button(role: .destructive) {
+                            store.deleteTimelineEvent(id: event.id)
+                            dismiss()
+                        } label: {
+                            Text("🗑️ 删除此记录")
+                                .font(.system(size: 13.5, weight: .bold))
+                                .foregroundStyle(AutoColor.rose)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 12)
+                                .background(AutoColor.rose.opacity(0.16), in: Capsule())
+                        }
+                        .buttonStyle(.plain)
+
+                        Button {
+                            store.updateTimelineEvent(id: event.id, title: title, cost: cost, odo: odo)
+                            dismiss()
+                        } label: {
+                            Text("💾 保存修改")
+                                .font(.system(size: 13.5, weight: .heavy))
+                                .foregroundStyle(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 12)
+                                .background(AutoColor.accentOrange, in: Capsule())
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                .padding(16)
+            }
+            .navigationTitle("📝 账单记录详情与编辑")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("关闭") { dismiss() }
+                }
+            }
+            .onAppear {
+                title = event.title
+                cost = event.cost
+                odo = event.odo
+            }
+        }
+        .preferredColorScheme(store.isDarkMode ? .dark : .light)
     }
 }
