@@ -406,6 +406,16 @@ final class VehicleStore: ObservableObject {
         car.odometer = max(car.odometer, odo)
         car.purchase.accessories += cost.rounded()
         car.purchase.totalLanded += cost.rounded()
+        car.purchase.gearItems.insert(
+            CarGearItem(
+                name: detailNote.isEmpty ? modType : detailNote,
+                category: modType,
+                price: cost,
+                warrantyNote: "\(todayFull) 装车入库",
+                legalBadge: "合规已建档"
+            ),
+            at: 0
+        )
 
         let event = TimelineEvent(
             date: todayFull,

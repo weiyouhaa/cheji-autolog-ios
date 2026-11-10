@@ -85,6 +85,9 @@ struct LifecycleTCOView: View {
             // 1.5 Iteration 02: Auto Loan & Financing Calculator Card
             loanFinancingCard
 
+            // 1.6 Iteration 09: Modification & Car Gear Inventory Showcase
+            gearShowcaseCard
+
             // 1.8 Iteration 04: 5-Year Depreciation Curve & Trade-In Advisor Card
             depreciationAdvisorCard
 
@@ -330,6 +333,62 @@ struct LifecycleTCOView: View {
                     .fill(Color.primary.opacity(0.045))
                     .overlay(RoundedRectangle(cornerRadius: 15, style: .continuous).strokeBorder(Color.white.opacity(0.12), lineWidth: 1))
             )
+        }
+        .liquidGlassCard(cornerRadius: 28)
+    }
+
+    // MARK: - Iteration 09: Modification & Car Gear Inventory Showcase
+    private var gearShowcaseCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Text("✨ 改装与车载好物陈列柜")
+                    .font(.system(size: 14.5, weight: .bold))
+                Spacer()
+                Text("共 \(car.purchase.gearItems.count) 件资产")
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundStyle(AutoColor.purple)
+            }
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 10) {
+                    ForEach(car.purchase.gearItems) { gear in
+                        VStack(alignment: .leading, spacing: 5) {
+                            HStack {
+                                Text(gear.category)
+                                    .font(.system(size: 10, weight: .bold))
+                                    .foregroundStyle(AutoColor.purple)
+                                    .padding(.horizontal, 7)
+                                    .padding(.vertical, 2.5)
+                                    .background(AutoColor.purple.opacity(0.15), in: Capsule())
+                                Spacer()
+                                Text("¥\(Int(gear.price).formatted())")
+                                    .font(.system(size: 12.5, weight: .heavy, design: .rounded))
+                                    .monospacedDigit()
+                            }
+
+                            Text(gear.name)
+                                .font(.system(size: 12.5, weight: .bold))
+                                .lineLimit(1)
+
+                            HStack {
+                                Text(gear.warrantyNote)
+                                Spacer()
+                                Text("✓ \(gear.legalBadge)")
+                                    .foregroundStyle(AutoColor.emerald)
+                            }
+                            .font(.system(size: 10, weight: .semibold))
+                            .foregroundStyle(.secondary)
+                        }
+                        .frame(width: 225)
+                        .padding(11)
+                        .background(
+                            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                .fill(Color.primary.opacity(0.045))
+                                .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).strokeBorder(Color.white.opacity(0.14), lineWidth: 1))
+                        )
+                    }
+                }
+            }
         }
         .liquidGlassCard(cornerRadius: 28)
     }

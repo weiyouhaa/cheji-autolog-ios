@@ -63,6 +63,15 @@ struct PDICheckItem: Identifiable, Codable, Equatable {
     var passed: Bool
 }
 
+struct CarGearItem: Identifiable, Codable, Equatable {
+    var id: UUID = UUID()
+    var name: String
+    var category: String
+    var price: Double
+    var warrantyNote: String
+    var legalBadge: String
+}
+
 struct PurchaseInfo: Codable, Equatable {
     var nakedPrice: Double
     var tax: Double
@@ -83,6 +92,7 @@ struct PurchaseInfo: Codable, Equatable {
         bankName: "宝马金融 / 招商银行车贷"
     )
     var pdiItems: [PDICheckItem] = SampleVehicles.defaultPDIItems
+    var gearItems: [CarGearItem] = SampleVehicles.defaultGearItems
 }
 
 struct FuelLog: Identifiable, Codable, Equatable {
@@ -271,6 +281,12 @@ struct ResaleYearProjection: Identifiable, Equatable {
 }
 
 enum SampleVehicles {
+    static let defaultGearItems: [CarGearItem] = [
+        CarGearItem(name: "XPEL LUX Plus 8.5mil 隐形车衣", category: "🛡️ 漆面保护", price: 6800, warrantyNote: "10年官方电子质保", legalBadge: "透明膜免备案"),
+        CarGearItem(name: "龙膜后羿 70 前挡隔热太阳膜", category: "☀️ 隔热防晒", price: 1680, warrantyNote: "终身质保 · 不阻ETC", legalBadge: "透光率合规"),
+        CarGearItem(name: "盯盯拍 Mini5 4K 隐藏式记录仪", category: "📷 数码车品", price: 820, warrantyNote: "含降压线停车监控", legalBadge: "原厂阅读灯取电")
+    ]
+
     static let defaultPDIItems: [PDICheckItem] = [
         PDICheckItem(id: "pdi_1", category: "外观与漆面", title: "全车漆面无划痕/色差 (流光反射检查)", detail: "原厂漆膜厚度 110~135μm 均匀一致", passed: true),
         PDICheckItem(id: "pdi_2", category: "外观与漆面", title: "全车玻璃与轮胎生产日期早于铭牌出厂日", detail: "防范运输途中更换配件", passed: true),
