@@ -193,6 +193,24 @@ final class VehicleStore: ObservableObject {
         }
     }
 
+    // MARK: - Iteration 07: New Car Delivery PDI Checklist Actions
+    func togglePDIItem(id: String) {
+        var car = currentVehicle
+        if let idx = car.purchase.pdiItems.firstIndex(where: { $0.id == id }) {
+            car.purchase.pdiItems[idx].passed.toggle()
+            currentVehicle = car
+        }
+    }
+
+    func markAllPDIItemsPassed() {
+        var car = currentVehicle
+        for i in car.purchase.pdiItems.indices {
+            car.purchase.pdiItems[i].passed = true
+        }
+        currentVehicle = car
+        showToast("🎖️ 提车 PDI 6 大核心指标已全部验收合格归档！")
+    }
+
     // MARK: - 1. Add Fuel / Charging Log
     func submitFuelLog(odo: Int, cost: Double, price: Double, subType: String, isFullTank: Bool, stationNote: String) {
         var car = currentVehicle

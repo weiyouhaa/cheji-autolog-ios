@@ -4,6 +4,7 @@ struct LifecycleTCOView: View {
     @EnvironmentObject var store: VehicleStore
     @State private var showEarlyPayoffAlert = false
     @State private var selectedProjectionYear: Int = 3
+    @State private var showPDIChecklistSheet = false
 
     var car: Vehicle { store.currentVehicle }
 
@@ -55,6 +56,29 @@ struct LifecycleTCOView: View {
                     detailRow(title: "购置方式 / 交付中心", value: "\(car.purchase.loanStatus)")
                 }
                 .font(.system(size: 11.5))
+
+                // Iteration 07: PDI Delivery Inspection Entry Strip
+                let passedCount = car.purchase.pdiItems.filter(\.passed).count
+                Button {
+                    showPDIChecklistSheet = true
+                } label: {
+                    HStack {
+                        Text("📋 提车 PDI 专业验车清单")
+                            .font(.system(size: 12, weight: .bold))
+                        Spacer()
+                        Text("已验收 \(passedCount)/\(car.purchase.pdiItems.count) 项 ›")
+                            .font(.system(size: 11.5, weight: .heavy, design: .rounded))
+                            .foregroundStyle(AutoColor.emerald)
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .fill(AutoColor.emerald.opacity(0.14))
+                            .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(AutoColor.emerald.opacity(0.32), lineWidth: 1))
+                    )
+                }
+                .buttonStyle(.plain)
             }
             .liquidGlassCard(cornerRadius: 28, tint: AutoColor.purple)
 
@@ -153,6 +177,12 @@ struct LifecycleTCOView: View {
         } message: {
             let plan = car.purchase.loanPlan
             Text("当前剩余 \(plan.remainingMonths) 期，待还本息 ¥\(Int(plan.remainingBalance).formatted())。\n若本月一次性提前结清（免违约金期），预计可节省后续利息约 ¥\(Int(plan.estimatedInterestSavedOnEarlyPayoff).formatted())。")
+        }
+        .sheet(isPresented: $showPDIChecklistSheet) {
+            PDIChecklistSheetView()
+                .environmentObject(store)
+                .presentationDetents([.large])
+                .presentationCornerRadius(36)
         }
     }
 
@@ -355,5 +385,78 @@ struct LifecycleTCOView: View {
                 .fill(Color.primary.opacity(0.05))
                 .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(Color.white.opacity(0.12), lineWidth: 1))
         )
+    }
+}
+
+struct PDIChecklistSheetView: View {
+    @EnvironmentObject var store: VehicleStore
+    @Environment(\.dismiss) private var dismiss
+
+    var items: [PDICheckItem] { store.currentVehicle.purchase.pdiItems }
+
+    var body: some View {
+        NavigationStack {
+            ZStack {
+                SpatialMeshBackground(isDark: store.isDarkMode)
+
+                ScrollView(showsIndicators: false) {
+                    VStack(alignment: .leading, spacing: 12) {
+                        HStack {
+                            Text("🎖️ 提车交付标准 PDI 检验报告")
+                                .font(.system(size: 14, weight: .bold))
+                            Spacer()
+                            Button {
+                                store.markAllPDIItemsPassed()
+                            } label: {
+                                Text("一键全部通过")
+                                    .font(.system(size: 11.5, weight: .bold))
+                                    .foregroundStyle(AutoColor.emerald)
+                            }
+                        }
+
+                        ForEach(items) { item in
+                            Button {
+                                store.togglePDIItem(id: item.id)
+                            } label: {
+                                HStack(spacing: 10) {
+                                    Image(systemName: item.passed ? "checkmark.seal.fill" : "circle")
+                                        .font(.system(size: 18))
+                                        .foregroundStyle(item.passed ? AutoColor.emerald : .secondary)
+
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text("[\(item.category)] \(item.title)")
+                                            .font(.system(size: 12.5, weight: .bold))
+                                        Text(item.detail)
+                                            .font(.system(size: 10.5))
+                                            .foregroundStyle(.secondary)
+                                    }
+                                    Spacer()
+                                }
+                                .padding(12)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                        .fill(item.passed ? AutoColor.emerald.opacity(0.14) : Color.primary.opacity(0.05))
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                                .strokeBorder(item.passed ? AutoColor.emerald.opacity(0.35) : Color.white.opacity(0.12), lineWidth: 1)
+                                        )
+                                )
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                    .padding(16)
+                }
+            }
+            .navigationTitle("📋 提车 PDI 验车清单")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("完成") { dismiss() }
+                        .fontWeight(.bold)
+                }
+            }
+        }
+        .preferredColorScheme(store.isDarkMode ? .dark : .light)
     }
 }

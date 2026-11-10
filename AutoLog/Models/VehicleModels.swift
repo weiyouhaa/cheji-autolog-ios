@@ -55,6 +55,14 @@ struct AutoLoanPlan: Codable, Equatable {
     }
 }
 
+struct PDICheckItem: Identifiable, Codable, Equatable {
+    var id: String
+    var category: String
+    var title: String
+    var detail: String
+    var passed: Bool
+}
+
 struct PurchaseInfo: Codable, Equatable {
     var nakedPrice: Double
     var tax: Double
@@ -74,6 +82,7 @@ struct PurchaseInfo: Codable, Equatable {
         monthlyPayment: 5420,
         bankName: "宝马金融 / 招商银行车贷"
     )
+    var pdiItems: [PDICheckItem] = SampleVehicles.defaultPDIItems
 }
 
 struct FuelLog: Identifiable, Codable, Equatable {
@@ -260,6 +269,15 @@ struct ResaleYearProjection: Identifiable, Equatable {
 }
 
 enum SampleVehicles {
+    static let defaultPDIItems: [PDICheckItem] = [
+        PDICheckItem(id: "pdi_1", category: "外观与漆面", title: "全车漆面无划痕/色差 (流光反射检查)", detail: "原厂漆膜厚度 110~135μm 均匀一致", passed: true),
+        PDICheckItem(id: "pdi_2", category: "外观与漆面", title: "全车玻璃与轮胎生产日期早于铭牌出厂日", detail: "防范运输途中更换配件", passed: true),
+        PDICheckItem(id: "pdi_3", category: "铭牌与机械", title: "B柱车辆铭牌出厂日期 ≤ 3个月 (非库存车)", detail: "核对车架号 VIN 与发动机号", passed: true),
+        PDICheckItem(id: "pdi_4", category: "铭牌与机械", title: "提车初始表显里程 ≤ 50 km", detail: "提车实测仅 12 km，轮胎胎毛完整", passed: true),
+        PDICheckItem(id: "pdi_5", category: "内饰与电器", title: "座椅真皮无褶皱污渍 · 车机大屏与音响正常", detail: "CarPlay、360环影、空调制冷正常", passed: true),
+        PDICheckItem(id: "pdi_6", category: "随车凭证", title: "购车发票四联 + 车辆合格证 + 一致性证书", detail: "两把原厂钥匙 + 随车三角牌与反光背心齐全", passed: true)
+    ]
+
     static let defaultTrips: [DrivingTrip] = [
         DrivingTrip(date: "11-09", title: "沪杭高速 G60 巡航往返", scenario: "🛣️ 高速巡航", distanceKm: 186, avgSpeedKmh: 98, consumption: 6.4),
         DrivingTrip(date: "11-07", title: "陆家嘴—张江早晚高峰通勤", scenario: "🏙️ 市区通勤", distanceKm: 34, avgSpeedKmh: 26, consumption: 9.2),
