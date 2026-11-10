@@ -24,6 +24,7 @@ final class VehicleStore: ObservableObject {
     @Published var quickLogPresented: Bool = false
     @Published var selectedQuickLogCategory: QuickLogCategory = .fuel
     @Published var addVehiclePresented: Bool = false
+    @Published var compareSheetPresented: Bool = false
     @Published var lifecycleFilter: String = "all"
     @Published var toastMessage: String? = nil
 

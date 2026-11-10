@@ -337,9 +337,19 @@ struct CockpitHomeView: View {
                     .font(.system(size: 14, weight: .bold))
                 Spacer()
                 Button {
+                    store.compareSheetPresented = true
+                } label: {
+                    Text("⚖️ 双车PK")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundStyle(AutoColor.purple)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(AutoColor.purple.opacity(0.15), in: Capsule())
+                }
+                Button {
                     store.cycleMonthlyBudgetTarget()
                 } label: {
-                    Text("预算上限 ¥\(Int(car.monthlyBudgetTarget).formatted()) ⟳")
+                    Text("预算 ¥\(Int(car.monthlyBudgetTarget).formatted()) ⟳")
                         .font(.system(size: 11, weight: .bold))
                         .foregroundStyle(AutoColor.cyan)
                         .padding(.horizontal, 9)

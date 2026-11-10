@@ -73,6 +73,12 @@ struct ContentView: View {
                 .presentationDetents([.large])
                 .presentationCornerRadius(36)
         }
+        .sheet(isPresented: $store.compareSheetPresented) {
+            GarageCompareSheetView()
+                .environmentObject(store)
+                .presentationDetents([.large])
+                .presentationCornerRadius(36)
+        }
     }
 
     // MARK: - Top Liquid Glass Header Bar
@@ -93,6 +99,12 @@ struct ContentView: View {
                     }
                 }
                 Section("车库管理") {
+                    Button {
+                        store.compareSheetPresented = true
+                    } label: {
+                        Label("双车横向对比 PK 实验室", systemImage: "chart.bar.xaxis")
+                    }
+
                     Button {
                         store.addVehiclePresented = true
                     } label: {
@@ -313,5 +325,145 @@ struct ContentView: View {
             )
         }
         .buttonStyle(.plain)
+    }
+}
+
+// MARK: - Iteration 10: Multi-Car Side-by-Side Benchmark Sheet
+struct GarageCompareSheetView: View {
+    @EnvironmentObject var store: VehicleStore
+    @Environment(\.dismiss) private var dismiss
+
+    var leftCar: Vehicle {
+        store.vehicles.first ?? SampleVehicles.bmw330
+    }
+
+    var rightCar: Vehicle {
+        store.vehicles.count > 1 ? store.vehicles[1] : SampleVehicles.nioEt5t
+    }
+
+    var body: some View {
+        NavigationStack {
+            ZStack {
+                SpatialMeshBackground(isDark: store.isDarkMode)
+
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 14) {
+                        // Top Dual Vehicle Header
+                        HStack(spacing: 10) {
+                            carHeaderCard(car: leftCar, accent: AutoColor.accentOrange)
+                            Text("VS")
+                                .font(.system(size: 14, weight: .black, design: .rounded))
+                                .foregroundStyle(.secondary)
+                            carHeaderCard(car: rightCar, accent: AutoColor.emerald)
+                        }
+
+                        // 6-Dimension Comparison Rows
+                        VStack(spacing: 12) {
+                            compareRow(
+                                title: "⚡ 每公里能源费 (越低越省)",
+                                leftVal: String(format: "¥%.2f/km", leftCar.energyCostPerKm),
+                                rightVal: String(format: "¥%.2f/km", rightCar.energyCostPerKm),
+                                leftWin: leftCar.energyCostPerKm < rightCar.energyCostPerKm
+                            )
+                            Divider()
+                            compareRow(
+                                title: "📊 单公里全周期 TCO (含折旧)",
+                                leftVal: String(format: "¥%.2f/km", leftCar.comprehensiveCostPerKm),
+                                rightVal: String(format: "¥%.2f/km", rightCar.comprehensiveCostPerKm),
+                                leftWin: leftCar.comprehensiveCostPerKm < rightCar.comprehensiveCostPerKm
+                            )
+                            Divider()
+                            compareRow(
+                                title: "📅 日均拥车持有成本",
+                                leftVal: String(format: "¥%.1f/天", leftCar.dailyHoldingCost),
+                                rightVal: String(format: "¥%.1f/天", rightCar.dailyHoldingCost),
+                                leftWin: leftCar.dailyHoldingCost < rightCar.dailyHoldingCost
+                            )
+                            Divider()
+                            compareRow(
+                                title: "🛡️ 年度车险保费支出",
+                                leftVal: "¥\(Int(leftCar.insurance.totalPremium).formatted())",
+                                rightVal: "¥\(Int(rightCar.insurance.totalPremium).formatted())",
+                                leftWin: leftCar.insurance.totalPremium < rightCar.insurance.totalPremium
+                            )
+                            Divider()
+                            compareRow(
+                                title: "🎖️ 购车落地总投入",
+                                leftVal: String(format: "¥%.2f万", leftCar.purchase.totalLanded / 10000),
+                                rightVal: String(format: "¥%.2f万", rightCar.purchase.totalLanded / 10000),
+                                leftWin: leftCar.purchase.totalLanded < rightCar.purchase.totalLanded
+                            )
+                            Divider()
+                            compareRow(
+                                title: "💚 综合车况健康评分",
+                                leftVal: "\(leftCar.healthScore) 分",
+                                rightVal: "\(rightCar.healthScore) 分",
+                                leftWin: leftCar.healthScore >= rightCar.healthScore
+                            )
+                        }
+                        .liquidGlassCard(cornerRadius: 28)
+
+                        // Smart Conclusion Banner
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("💡 车库油电双车精算结论")
+                                .font(.system(size: 13, weight: .heavy))
+                                .foregroundStyle(AutoColor.cyan)
+                            Text("• 市区高频代步优先开「\(rightCar.name)」，每跑 10,000 km 仅需能源费约 ¥\(Int(rightCar.energyCostPerKm * 10000).formatted())，比燃油车立省 ¥\(Int(max(0, leftCar.energyCostPerKm - rightCar.energyCostPerKm) * 10000).formatted())；\n• 长途跨省无补能焦虑场景优选「\(leftCar.name)」，高速巡航油耗低至 6.4L/百公里。")
+                                .font(.system(size: 11.5))
+                                .foregroundStyle(.secondary)
+                        }
+                        .liquidGlassCard(cornerRadius: 24, tint: AutoColor.cyan)
+                    }
+                    .padding(16)
+                }
+            }
+            .navigationTitle("⚖️ 车库双车横向 PK 实验室")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("关闭") { dismiss() }
+                        .fontWeight(.bold)
+                }
+            }
+        }
+        .preferredColorScheme(store.isDarkMode ? .dark : .light)
+    }
+
+    private func carHeaderCard(car: Vehicle, accent: Color) -> some View {
+        VStack(spacing: 4) {
+            Text(car.plate)
+                .font(.system(size: 10.5, weight: .heavy, design: .rounded))
+                .foregroundStyle(.white)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 3)
+                .background(accent, in: Capsule())
+            Text(car.name)
+                .font(.system(size: 13.5, weight: .heavy))
+                .lineLimit(1)
+            Text("\(car.odometer.formatted()) km")
+                .font(.system(size: 11, weight: .semibold, design: .monospaced))
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity)
+        .liquidGlassCard(cornerRadius: 22, tint: accent)
+    }
+
+    private func compareRow(title: String, leftVal: String, rightVal: String, leftWin: Bool) -> some View {
+        VStack(spacing: 5) {
+            Text(title)
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundStyle(.secondary)
+            HStack {
+                Text(leftVal)
+                    .font(.system(size: 14, weight: .heavy, design: .rounded))
+                    .foregroundStyle(leftWin ? AutoColor.emerald : .primary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                Text(rightVal)
+                    .font(.system(size: 14, weight: .heavy, design: .rounded))
+                    .foregroundStyle(!leftWin ? AutoColor.emerald : .primary)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+            }
+            .monospacedDigit()
+        }
     }
 }
