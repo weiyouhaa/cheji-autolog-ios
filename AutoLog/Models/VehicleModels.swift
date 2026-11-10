@@ -90,6 +90,16 @@ struct FuelLog: Identifiable, Codable, Equatable {
     var note: String
 }
 
+struct DrivingTrip: Identifiable, Codable, Equatable {
+    var id: UUID = UUID()
+    var date: String
+    var title: String
+    var scenario: String // 🏙️ 市区通勤 | 🛣️ 高速巡航 | ⛰️ 跑山露营
+    var distanceKm: Int
+    var avgSpeedKmh: Int
+    var consumption: Double
+}
+
 struct MaintenancePart: Identifiable, Codable, Equatable {
     var id: UUID = UUID()
     var name: String
@@ -185,6 +195,7 @@ struct Vehicle: Identifiable, Codable, Equatable {
     var healthScore: Int
     var nextAlert: String
     var fuelLogs: [FuelLog]
+    var trips: [DrivingTrip] = SampleVehicles.defaultTrips
     var maintenanceParts: [MaintenancePart]
     var tires: [TireWheelStatus] = SampleVehicles.defaultTires
     var serviceRecords: [ServiceRecord]
@@ -211,6 +222,12 @@ struct Vehicle: Identifiable, Codable, Equatable {
 }
 
 enum SampleVehicles {
+    static let defaultTrips: [DrivingTrip] = [
+        DrivingTrip(date: "11-09", title: "沪杭高速 G60 巡航往返", scenario: "🛣️ 高速巡航", distanceKm: 186, avgSpeedKmh: 98, consumption: 6.4),
+        DrivingTrip(date: "11-07", title: "陆家嘴—张江早晚高峰通勤", scenario: "🏙️ 市区通勤", distanceKm: 34, avgSpeedKmh: 26, consumption: 9.2),
+        DrivingTrip(date: "10-26", title: "莫干山竹海盘山公路自驾", scenario: "⛰️ 跑山露营", distanceKm: 245, avgSpeedKmh: 62, consumption: 7.8)
+    ]
+
     static let defaultTires: [TireWheelStatus] = [
         TireWheelStatus(id: "FL", positionName: "左前轮 (FL)", pressureBar: 2.45, tempC: 28, treadMm: 5.8, brandSpec: "米其林 PS4 225/45 R18", patchCount: 0),
         TireWheelStatus(id: "FR", positionName: "右前轮 (FR)", pressureBar: 2.50, tempC: 29, treadMm: 5.7, brandSpec: "米其林 PS4 225/45 R18", patchCount: 0),

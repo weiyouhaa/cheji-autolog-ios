@@ -147,6 +147,27 @@ final class VehicleStore: ObservableObject {
         showToast("🎉 已办理车贷提前结清，累计节省利息约 ¥\(Int(saved))！")
     }
 
+    // MARK: - Iteration 03: Driving Trip & Scenario Logbook
+    func logQuickDrivingTrip(scenario: String) {
+        var car = currentVehicle
+        let todayShort = Self.shortDateString()
+        let isEV = car.isEV
+
+        let trip: DrivingTrip
+        if scenario.contains("高速") {
+            trip = DrivingTrip(date: todayShort, title: "高速巡航路段打卡", scenario: "🛣️ 高速巡航", distanceKm: 120, avgSpeedKmh: 102, consumption: isEV ? 15.6 : 6.3)
+        } else if scenario.contains("市区") {
+            trip = DrivingTrip(date: todayShort, title: "城市内环通勤打卡", scenario: "🏙️ 市区通勤", distanceKm: 28, avgSpeedKmh: 25, consumption: isEV ? 13.2 : 9.1)
+        } else {
+            trip = DrivingTrip(date: todayShort, title: "周末郊野山路自驾", scenario: "⛰️ 跑山露营", distanceKm: 95, avgSpeedKmh: 58, consumption: isEV ? 14.8 : 7.6)
+        }
+
+        car.odometer += trip.distanceKm
+        car.trips.insert(trip, at: 0)
+        currentVehicle = car
+        showToast("🧭 已记录「\(trip.scenario)」+\(trip.distanceKm)km · 实测能耗 \(trip.consumption)\(car.consumptionUnit)")
+    }
+
     // MARK: - 1. Add Fuel / Charging Log
     func submitFuelLog(odo: Int, cost: Double, price: Double, subType: String, isFullTank: Bool, stationNote: String) {
         var car = currentVehicle

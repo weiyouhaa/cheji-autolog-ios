@@ -62,6 +62,9 @@ struct FuelOdometerLabView: View {
             }
             .liquidGlassCard(cornerRadius: 28)
 
+            // 1.5 Iteration 03: Driving Scenario Analytics & Trip Logbook
+            tripScenarioAnalyticsCard
+
             // 2. Detailed Refueling / Charging Ledger
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
@@ -150,6 +153,86 @@ struct FuelOdometerLabView: View {
                 .fill(color.opacity(0.12))
                 .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).strokeBorder(color.opacity(0.3), lineWidth: 1))
         )
+    }
+
+    // MARK: - Iteration 03: Driving Scenario Analytics & Trip Logbook Card
+    private var tripScenarioAnalyticsCard: some View {
+        VStack(alignment: .leading, spacing: 11) {
+            HStack {
+                Text("🧭 路况能耗拆解与行程路书")
+                    .font(.system(size: 14.5, weight: .bold))
+                Spacer()
+                Text("点击打卡行程")
+                    .font(.system(size: 10.5, weight: .semibold))
+                    .foregroundStyle(.secondary)
+            }
+
+            // 3 Quick Scenario Check-in Buttons
+            HStack(spacing: 8) {
+                scenarioPill(title: "🛣️ 高速巡航", value: car.isEV ? "15.4 kWh" : "6.4 L", color: AutoColor.emerald)
+                scenarioPill(title: "🏙️ 市区通勤", value: car.isEV ? "13.1 kWh" : "9.2 L", color: AutoColor.amber)
+                scenarioPill(title: "⛰️ 跑山露营", value: car.isEV ? "14.8 kWh" : "7.8 L", color: AutoColor.cyan)
+            }
+
+            VStack(spacing: 7) {
+                ForEach(car.trips.prefix(3)) { trip in
+                    HStack {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("\(trip.date) · \(trip.title)")
+                                .font(.system(size: 12.5, weight: .bold))
+                                .lineLimit(1)
+                            Text("\(trip.scenario) · 均速 \(trip.avgSpeedKmh) km/h")
+                                .font(.system(size: 10.5))
+                                .foregroundStyle(.secondary)
+                        }
+                        Spacer()
+                        VStack(alignment: .trailing, spacing: 2) {
+                            Text("+\(trip.distanceKm) km")
+                                .font(.system(size: 12.5, weight: .heavy, design: .rounded))
+                                .monospacedDigit()
+                            Text(String(format: "%.1f %@", trip.consumption, car.consumptionUnit))
+                                .font(.system(size: 10.5, weight: .bold))
+                                .foregroundStyle(AutoColor.emerald)
+                                .monospacedDigit()
+                        }
+                    }
+                    .padding(.horizontal, 11)
+                    .padding(.vertical, 8)
+                    .background(
+                        RoundedRectangle(cornerRadius: 15, style: .continuous)
+                            .fill(Color.primary.opacity(0.045))
+                            .overlay(RoundedRectangle(cornerRadius: 15, style: .continuous).strokeBorder(Color.white.opacity(0.12), lineWidth: 1))
+                    )
+                }
+            }
+        }
+        .liquidGlassCard(cornerRadius: 28)
+    }
+
+    private func scenarioPill(title: String, value: String, color: Color) -> some View {
+        Button {
+            store.logQuickDrivingTrip(scenario: title)
+        } label: {
+            VStack(alignment: .leading, spacing: 3) {
+                Text(title)
+                    .font(.system(size: 11, weight: .bold))
+                Text(value)
+                    .font(.system(size: 13.5, weight: .heavy, design: .rounded))
+                    .foregroundStyle(color)
+                    .monospacedDigit()
+                Text("+ 打卡该路况 ›")
+                    .font(.system(size: 9.5, weight: .semibold))
+                    .foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(9)
+            .background(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(color.opacity(0.11))
+                    .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).strokeBorder(color.opacity(0.28), lineWidth: 1))
+            )
+        }
+        .buttonStyle(.plain)
     }
 }
 
