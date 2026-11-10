@@ -225,6 +225,14 @@ final class VehicleStore: ObservableObject {
         showToast("💰 本月养车预算上限已调整为 ¥\(Int(car.monthlyBudgetTarget).formatted())")
     }
 
+    // MARK: - Iteration 11: Seasonal Care Check-in
+    func completeSeasonalCareCheck(seasonName: String) {
+        var car = currentVehicle
+        car.healthScore = min(100, car.healthScore + 1)
+        currentVehicle = car
+        showToast("✅ 已完成「\(seasonName)」专项养护自检，车况评分提升至 \(car.healthScore) 分！")
+    }
+
     // MARK: - 1. Add Fuel / Charging Log
     func submitFuelLog(odo: Int, cost: Double, price: Double, subType: String, isFullTank: Bool, stationNote: String) {
         var car = currentVehicle

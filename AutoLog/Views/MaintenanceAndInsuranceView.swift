@@ -6,6 +6,7 @@ struct MaintenanceAndInsuranceView: View {
     @State private var showClaimCalculatorAlert = false
     @State private var selectedTireForEdit: TireWheelStatus? = nil
     @State private var showAccidentSOSSheet = false
+    @State private var selectedSeason: String = "❄️ 冬季"
 
     var car: Vehicle { store.currentVehicle }
     var isInsuranceMode: Bool { store.activeTab == .insurance }
@@ -88,6 +89,9 @@ struct MaintenanceAndInsuranceView: View {
         VStack(spacing: 12) {
             // 0. Iteration 01: 4-Wheel TPMS & Tread Depth Matrix Card
             tireMatrixCard
+
+            // 0.5 Iteration 11: Seasonal & Weather Care Guide Card
+            seasonalCareCard
 
             // 1. Component Lifespan Dual-Progress Card
             VStack(alignment: .leading, spacing: 12) {
@@ -575,6 +579,75 @@ struct MaintenanceAndInsuranceView: View {
                     .buttonStyle(.plain)
                 }
             }
+        }
+        .liquidGlassCard(cornerRadius: 28)
+    }
+
+    // MARK: - Iteration 11: Seasonal & Weather Care Guide Card
+    private var seasonalCareCard: some View {
+        let seasons = ["🌱 春季", "☀️ 夏季", "🍂 秋季", "❄️ 冬季"]
+        let tipsMap: [String: (title: String, detail: String)] = [
+            "🌱 春季": ("清理水箱柳絮 & 抗菌空调滤芯", "春季杨柳絮易堵塞冷凝器散热网，梅雨季前建议检查雨刮胶条与空调除菌。"),
+            "☀️ 夏季": ("高温冷车胎压微调 & 天窗排水孔", "夏季高速路表温度超 60°C，建议冷车胎压保持 2.4 Bar 并疏通天窗四角排水孔防积水。"),
+            "🍂 秋季": ("12V 小电瓶 CCA 健康度检测", "入冬前检测蓄电池内阻与冷启动电流，避免低温清晨亏电无法解锁或启动。"),
+            "❄️ 冬季": ("更换 -25°C 防冻玻璃水 & 补偿冷胎压", car.isEV ? "低温环境建议出行前开启 App 电池预热与座舱定时升温，降低冬季电耗。" : "热胀冷缩每降 10°C 胎压约降 0.07 Bar，建议补气至 2.55 Bar 并换用防冻玻璃水。")
+        ]
+        let currentTip = tipsMap[selectedSeason] ?? tipsMap["❄️ 冬季"]!
+
+        return VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Text("🌦️ 四季气候智能养护指南")
+                    .font(.system(size: 14.5, weight: .bold))
+                Spacer()
+                Button {
+                    store.completeSeasonalCareCheck(seasonName: selectedSeason)
+                } label: {
+                    Text("✓ 打卡当季自检")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundStyle(AutoColor.emerald)
+                        .padding(.horizontal, 9)
+                        .padding(.vertical, 4)
+                        .background(AutoColor.emerald.opacity(0.15), in: Capsule())
+                }
+            }
+
+            HStack(spacing: 6) {
+                ForEach(seasons, id: \.self) { s in
+                    let isSel = (selectedSeason == s)
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            selectedSeason = s
+                        }
+                    } label: {
+                        Text(s)
+                            .font(.system(size: 11.5, weight: .bold))
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 6)
+                            .background(
+                                Capsule()
+                                    .fill(isSel ? AutoColor.cyan.opacity(0.2) : Color.primary.opacity(0.05))
+                                    .overlay(Capsule().strokeBorder(isSel ? AutoColor.cyan : Color.white.opacity(0.12), lineWidth: 1))
+                            )
+                            .foregroundStyle(isSel ? AutoColor.cyan : .secondary)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text(currentTip.title)
+                    .font(.system(size: 12.5, weight: .bold))
+                    .foregroundStyle(AutoColor.cyan)
+                Text(currentTip.detail)
+                    .font(.system(size: 11))
+                    .foregroundStyle(.secondary)
+            }
+            .padding(10)
+            .background(
+                RoundedRectangle(cornerRadius: 15, style: .continuous)
+                    .fill(Color.primary.opacity(0.045))
+                    .overlay(RoundedRectangle(cornerRadius: 15, style: .continuous).strokeBorder(Color.white.opacity(0.12), lineWidth: 1))
+            )
         }
         .liquidGlassCard(cornerRadius: 28)
     }
