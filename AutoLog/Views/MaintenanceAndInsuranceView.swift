@@ -4,6 +4,7 @@ import UIKit
 struct MaintenanceAndInsuranceView: View {
     @EnvironmentObject var store: VehicleStore
     @State private var showClaimCalculatorAlert = false
+    @State private var selectedTireForEdit: TireWheelStatus? = nil
 
     var car: Vehicle { store.currentVehicle }
     var isInsuranceMode: Bool { store.activeTab == .insurance }
@@ -67,11 +68,20 @@ struct MaintenanceAndInsuranceView: View {
         } message: {
             Text("当前享 \(car.insurance.ncdFactor)。\n• 若本年度出险 1 次：次年 NCD 折扣恢复为 1.0，预计保费上浮约 ¥1,420（故 ¥1,500 以内小刮蹭建议自费维修）；\n• 若出险 2 次：次年保费预计上浮约 ¥2,850。")
         }
+        .sheet(item: $selectedTireForEdit) { tire in
+            TireTuningSheetView(tire: tire)
+                .environmentObject(store)
+                .presentationDetents([.height(360)])
+                .presentationCornerRadius(32)
+        }
     }
 
     // MARK: - Screen 4: Maintenance & Repair Section
     private var maintenanceSection: some View {
         VStack(spacing: 12) {
+            // 0. Iteration 01: 4-Wheel TPMS & Tread Depth Matrix Card
+            tireMatrixCard
+
             // 1. Component Lifespan Dual-Progress Card
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
@@ -434,5 +444,177 @@ struct MaintenanceAndInsuranceView: View {
                 .fill(Color.primary.opacity(0.045))
                 .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).strokeBorder(Color.white.opacity(0.12), lineWidth: 1))
         )
+    }
+
+    // MARK: - Iteration 01: 4-Wheel TPMS & Tread Matrix Card
+    private var tireMatrixCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text("🛞 四轮胎压与胎纹透视矩阵 (TPMS)")
+                    .font(.system(size: 14.5, weight: .bold))
+                Spacer()
+                Button {
+                    store.inflateAllTiresToStandard()
+                } label: {
+                    Text("⚡ 一键充气校准")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundStyle(AutoColor.cyan)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 4.5)
+                        .background(AutoColor.cyan.opacity(0.15), in: Capsule())
+                }
+            }
+
+            LazyVGrid(columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)], spacing: 10) {
+                ForEach(car.tires) { tire in
+                    let isLowPressure = tire.pressureBar < 2.38
+                    let stateColor = isLowPressure ? AutoColor.amber : AutoColor.emerald
+
+                    Button {
+                        selectedTireForEdit = tire
+                    } label: {
+                        VStack(alignment: .leading, spacing: 5) {
+                            HStack {
+                                Text(tire.positionName)
+                                    .font(.system(size: 12, weight: .bold))
+                                Spacer()
+                                if tire.patchCount > 0 {
+                                    Text("补胎×\(tire.patchCount)")
+                                        .font(.system(size: 9.5, weight: .bold))
+                                        .foregroundStyle(AutoColor.rose)
+                                        .padding(.horizontal, 6)
+                                        .padding(.vertical, 2)
+                                        .background(AutoColor.rose.opacity(0.16), in: Capsule())
+                                } else {
+                                    Circle()
+                                        .fill(stateColor)
+                                        .frame(width: 7, height: 7)
+                                }
+                            }
+
+                            HStack(alignment: .firstTextBaseline, spacing: 3) {
+                                Text(String(format: "%.2f", tire.pressureBar))
+                                    .font(.system(size: 18, weight: .heavy, design: .rounded))
+                                    .foregroundStyle(stateColor)
+                                    .monospacedDigit()
+                                Text("Bar")
+                                    .font(.system(size: 10.5, weight: .semibold))
+                                    .foregroundStyle(.secondary)
+                                Spacer()
+                                Text("\(tire.tempC)°C")
+                                    .font(.system(size: 11.5, weight: .bold, design: .rounded))
+                                    .foregroundStyle(.secondary)
+                                    .monospacedDigit()
+                            }
+
+                            HStack {
+                                Text(String(format: "胎纹 %.1fmm", tire.treadMm))
+                                Spacer()
+                                Text("调校 ›")
+                                    .foregroundStyle(AutoColor.cyan)
+                            }
+                            .font(.system(size: 10.5, weight: .semibold))
+                            .foregroundStyle(.secondary)
+                        }
+                        .padding(11)
+                        .background(
+                            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                .fill(Color.primary.opacity(0.05))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                        .strokeBorder(isLowPressure ? AutoColor.amber.opacity(0.55) : Color.white.opacity(0.14), lineWidth: 1)
+                                )
+                        )
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
+        .liquidGlassCard(cornerRadius: 28)
+    }
+}
+
+struct TireTuningSheetView: View {
+    @EnvironmentObject var store: VehicleStore
+    @Environment(\.dismiss) private var dismiss
+    let tire: TireWheelStatus
+
+    @State private var pressure: Double = 2.50
+    @State private var tread: Double = 5.5
+    @State private var patchCount: Int = 0
+
+    var body: some View {
+        NavigationStack {
+            ZStack {
+                SpatialMeshBackground(isDark: store.isDarkMode)
+
+                VStack(alignment: .leading, spacing: 14) {
+                    Text("规格：\(tire.brandSpec)")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(.secondary)
+
+                    VStack(spacing: 14) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            HStack {
+                                Text("冷车胎压 (Bar)")
+                                    .font(.system(size: 12, weight: .bold))
+                                Spacer()
+                                Text(String(format: "%.2f Bar", pressure))
+                                    .font(.system(size: 14, weight: .heavy, design: .rounded))
+                                    .foregroundStyle(AutoColor.emerald)
+                                    .monospacedDigit()
+                            }
+                            Slider(value: $pressure, in: 1.8...3.2, step: 0.05)
+                                .tint(AutoColor.emerald)
+                        }
+
+                        VStack(alignment: .leading, spacing: 4) {
+                            HStack {
+                                Text("剩余胎纹深度 (安全线 ≥ 1.6mm)")
+                                    .font(.system(size: 12, weight: .bold))
+                                Spacer()
+                                Text(String(format: "%.1f mm", tread))
+                                    .font(.system(size: 14, weight: .heavy, design: .rounded))
+                                    .foregroundStyle(AutoColor.cyan)
+                                    .monospacedDigit()
+                            }
+                            Slider(value: $tread, in: 1.5...8.0, step: 0.1)
+                                .tint(AutoColor.cyan)
+                        }
+
+                        Stepper("历史蘑菇钉补胎次数：\(patchCount) 次", value: $patchCount, in: 0...10)
+                            .font(.system(size: 12.5, weight: .bold))
+                    }
+                    .liquidGlassCard(cornerRadius: 24)
+
+                    Button {
+                        store.updateSingleTire(id: tire.id, pressureBar: pressure, treadMm: tread, patchCount: patchCount)
+                        dismiss()
+                    } label: {
+                        Text("保存「\(tire.positionName)」调校数据")
+                            .font(.system(size: 14.5, weight: .heavy, design: .rounded))
+                            .foregroundStyle(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 13)
+                            .background(AutoColor.accentOrange, in: Capsule())
+                    }
+                    .buttonStyle(.plain)
+                }
+                .padding(16)
+            }
+            .navigationTitle("🛞 \(tire.positionName) 调校")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("关闭") { dismiss() }
+                }
+            }
+            .onAppear {
+                pressure = tire.pressureBar
+                tread = tire.treadMm
+                patchCount = tire.patchCount
+            }
+        }
+        .preferredColorScheme(store.isDarkMode ? .dark : .light)
     }
 }

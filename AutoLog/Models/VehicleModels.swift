@@ -62,6 +62,16 @@ struct MaintenancePart: Identifiable, Codable, Equatable {
     var lastDate: String
 }
 
+struct TireWheelStatus: Identifiable, Codable, Equatable {
+    var id: String // FL | FR | RL | RR
+    var positionName: String
+    var pressureBar: Double
+    var tempC: Int
+    var treadMm: Double
+    var brandSpec: String
+    var patchCount: Int
+}
+
 struct ServiceRecord: Identifiable, Codable, Equatable {
     var id: UUID = UUID()
     var date: String
@@ -135,6 +145,7 @@ struct Vehicle: Identifiable, Codable, Equatable {
     var nextAlert: String
     var fuelLogs: [FuelLog]
     var maintenanceParts: [MaintenancePart]
+    var tires: [TireWheelStatus] = SampleVehicles.defaultTires
     var serviceRecords: [ServiceRecord]
     var insurance: InsuranceInfo
     var timeline: [TimelineEvent]
@@ -159,6 +170,13 @@ struct Vehicle: Identifiable, Codable, Equatable {
 }
 
 enum SampleVehicles {
+    static let defaultTires: [TireWheelStatus] = [
+        TireWheelStatus(id: "FL", positionName: "左前轮 (FL)", pressureBar: 2.45, tempC: 28, treadMm: 5.8, brandSpec: "米其林 PS4 225/45 R18", patchCount: 0),
+        TireWheelStatus(id: "FR", positionName: "右前轮 (FR)", pressureBar: 2.50, tempC: 29, treadMm: 5.7, brandSpec: "米其林 PS4 225/45 R18", patchCount: 0),
+        TireWheelStatus(id: "RL", positionName: "左后轮 (RL)", pressureBar: 2.60, tempC: 30, treadMm: 5.4, brandSpec: "米其林 PS4 245/40 R18", patchCount: 0),
+        TireWheelStatus(id: "RR", positionName: "右后轮 (RR)", pressureBar: 2.32, tempC: 31, treadMm: 5.3, brandSpec: "米其林 PS4 245/40 R18", patchCount: 1)
+    ]
+
     static let bmw330 = Vehicle(
         id: "bmw330",
         name: "BMW 330Li 曜夜",

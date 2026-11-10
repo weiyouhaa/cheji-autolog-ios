@@ -85,6 +85,31 @@ final class VehicleStore: ObservableObject {
         showToast("已恢复出厂演示数据")
     }
 
+    // MARK: - Iteration 01: Tire & TPMS Matrix Actions
+    func inflateAllTiresToStandard(frontBar: Double = 2.50, rearBar: Double = 2.60) {
+        var car = currentVehicle
+        for i in car.tires.indices {
+            if car.tires[i].id.hasPrefix("F") {
+                car.tires[i].pressureBar = frontBar
+            } else {
+                car.tires[i].pressureBar = rearBar
+            }
+        }
+        currentVehicle = car
+        showToast("🛞 已将四轮充气校准至标准胎压 (前 \(String(format: "%.1f", frontBar)) / 后 \(String(format: "%.1f", rearBar)) Bar)")
+    }
+
+    func updateSingleTire(id: String, pressureBar: Double, treadMm: Double, patchCount: Int) {
+        var car = currentVehicle
+        if let idx = car.tires.firstIndex(where: { $0.id == id }) {
+            car.tires[idx].pressureBar = pressureBar
+            car.tires[idx].treadMm = treadMm
+            car.tires[idx].patchCount = patchCount
+            currentVehicle = car
+            showToast("✅ 已更新「\(car.tires[idx].positionName)」胎压与胎纹档案")
+        }
+    }
+
     // MARK: - 1. Add Fuel / Charging Log
     func submitFuelLog(odo: Int, cost: Double, price: Double, subType: String, isFullTank: Bool, stationNote: String) {
         var car = currentVehicle
