@@ -5,6 +5,7 @@ struct MaintenanceAndInsuranceView: View {
     @EnvironmentObject var store: VehicleStore
     @State private var showClaimCalculatorAlert = false
     @State private var selectedTireForEdit: TireWheelStatus? = nil
+    @State private var showAccidentSOSSheet = false
 
     var car: Vehicle { store.currentVehicle }
     var isInsuranceMode: Bool { store.activeTab == .insurance }
@@ -73,6 +74,12 @@ struct MaintenanceAndInsuranceView: View {
                 .environmentObject(store)
                 .presentationDetents([.height(360)])
                 .presentationCornerRadius(32)
+        }
+        .sheet(isPresented: $showAccidentSOSSheet) {
+            AccidentSOSSheetView()
+                .environmentObject(store)
+                .presentationDetents([.large])
+                .presentationCornerRadius(36)
         }
     }
 
@@ -235,6 +242,9 @@ struct MaintenanceAndInsuranceView: View {
     private var insuranceSection: some View {
         let ins = car.insurance
         return VStack(spacing: 12) {
+            // 0. Iteration 06: Emergency SOS & 6-Angle Evidence Guide Card
+            emergencySOSCard
+
             // 1. Insurance Policy Wallet Card
             VStack(alignment: .leading, spacing: 12) {
                 HStack(alignment: .top) {
@@ -446,6 +456,42 @@ struct MaintenanceAndInsuranceView: View {
         )
     }
 
+    // MARK: - Iteration 06: Emergency SOS & Accident Evidence Guide Card
+    private var emergencySOSCard: some View {
+        HStack(spacing: 12) {
+            ZStack {
+                Circle()
+                    .fill(AutoColor.rose.opacity(0.22))
+                    .frame(width: 44, height: 44)
+                Text("🆘")
+                    .font(.system(size: 20))
+            }
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text("事故应急救援 & 现场 6 图取证向导")
+                    .font(.system(size: 13.5, weight: .heavy))
+                Text("刮蹭/追尾不慌 · 标准 6 机位拍照清单 + 一键报案专线")
+                    .font(.system(size: 11))
+                    .foregroundStyle(.secondary)
+            }
+
+            Spacer()
+
+            Button {
+                showAccidentSOSSheet = true
+            } label: {
+                Text("打开急救包 ›")
+                    .font(.system(size: 11.5, weight: .bold))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 11)
+                    .padding(.vertical, 7)
+                    .background(AutoColor.rose, in: Capsule())
+            }
+            .buttonStyle(.plain)
+        }
+        .liquidGlassCard(cornerRadius: 26, tint: AutoColor.rose)
+    }
+
     // MARK: - Iteration 01: 4-Wheel TPMS & Tread Matrix Card
     private var tireMatrixCard: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -613,6 +659,145 @@ struct TireTuningSheetView: View {
                 pressure = tire.pressureBar
                 tread = tire.treadMm
                 patchCount = tire.patchCount
+            }
+        }
+        .preferredColorScheme(store.isDarkMode ? .dark : .light)
+    }
+}
+
+struct AccidentSOSSheetView: View {
+    @EnvironmentObject var store: VehicleStore
+    @Environment(\.dismiss) private var dismiss
+    @State private var checkedAngles: Set<Int> = [0, 1]
+
+    private let photoAngles: [(title: String, desc: String)] = [
+        ("1. 前侧 45° 全景照", "需拍清两车相对位置、车道线及双方前车牌"),
+        ("2. 后侧 45° 全景照", "需拍清后方标线、刹车轨迹及双方后车牌"),
+        ("3. 碰撞接触点特写", "近距离拍清掉漆、凹陷或碎裂部位细节"),
+        ("4. 本车与对方车架号 VIN", "前挡风玻璃左下角或 B 柱铭牌"),
+        ("5. 对方行驶证与驾驶证", "正副本均需拍清，核对是否在有效期内"),
+        ("6. 交管 12123 责任认定书", "轻微事故拍照后先挪车至安全区再走快处")
+    ]
+
+    private let hotlines: [(name: String, number: String)] = [
+        ("🚓 交警交通事故报警", "122"),
+        ("🛣️ 全国高速公路救援", "12122"),
+        ("🛡️ 中国平安产险报案", "95511"),
+        ("🌊 太平洋产险报案", "95500"),
+        ("🏛️ 人保财险 PICC 报案", "95518")
+    ]
+
+    var body: some View {
+        NavigationStack {
+            ZStack {
+                SpatialMeshBackground(isDark: store.isDarkMode)
+
+                ScrollView(showsIndicators: false) {
+                    VStack(alignment: .leading, spacing: 14) {
+                        // Step 1: Safety Warning
+                        HStack(spacing: 10) {
+                            Text("⚠️")
+                                .font(.system(size: 22))
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("第一步：开启双闪 + 放置三角警示牌")
+                                    .font(.system(size: 13.5, weight: .heavy))
+                                Text("常规道路车后 50～100米，高速公路 150米外（夜间250米），车上人员立即撤离至护栏外！")
+                                    .font(.system(size: 11))
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                        .liquidGlassCard(cornerRadius: 24, tint: AutoColor.amber)
+
+                        // Step 2: 6-Angle Photo Checklist
+                        VStack(alignment: .leading, spacing: 10) {
+                            HStack {
+                                Text("📷 现场出险 6 机位标准取证清单")
+                                    .font(.system(size: 14, weight: .bold))
+                                Spacer()
+                                Text("已取证 \(checkedAngles.count)/6")
+                                    .font(.system(size: 11.5, weight: .bold))
+                                    .foregroundStyle(AutoColor.emerald)
+                            }
+
+                            ForEach(Array(photoAngles.enumerated()), id: \.offset) { idx, item in
+                                let isDone = checkedAngles.contains(idx)
+                                Button {
+                                    if isDone { checkedAngles.remove(idx) }
+                                    else { checkedAngles.insert(idx) }
+                                } label: {
+                                    HStack(spacing: 10) {
+                                        Image(systemName: isDone ? "checkmark.circle.fill" : "circle")
+                                            .font(.system(size: 17))
+                                            .foregroundStyle(isDone ? AutoColor.emerald : .secondary)
+                                        VStack(alignment: .leading, spacing: 2) {
+                                            Text(item.title)
+                                                .font(.system(size: 12.5, weight: .bold))
+                                            Text(item.desc)
+                                                .font(.system(size: 10.5))
+                                                .foregroundStyle(.secondary)
+                                        }
+                                        Spacer()
+                                    }
+                                    .padding(10)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 15, style: .continuous)
+                                            .fill(isDone ? AutoColor.emerald.opacity(0.14) : Color.primary.opacity(0.05))
+                                    )
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                        .liquidGlassCard(cornerRadius: 26)
+
+                        // Step 3: Emergency Hotlines & Policy Info
+                        VStack(alignment: .leading, spacing: 10) {
+                            HStack {
+                                Text("📞 一键救援与保险报案专线")
+                                    .font(.system(size: 14, weight: .bold))
+                                Spacer()
+                                Button {
+                                    UIPasteboard.general.string = "\(store.currentVehicle.plate) 保单号:\(store.currentVehicle.insurance.policyNo) VIN:\(store.currentVehicle.vin)"
+                                    store.showToast("✅ 已复制本车牌号、保单号与 VIN 码")
+                                } label: {
+                                    Text("复制本车报案三要素")
+                                        .font(.system(size: 11, weight: .bold))
+                                        .foregroundStyle(AutoColor.cyan)
+                                }
+                            }
+
+                            ForEach(hotlines, id: \.number) { line in
+                                HStack {
+                                    Text(line.name)
+                                        .font(.system(size: 12.5, weight: .bold))
+                                    Spacer()
+                                    Button {
+                                        UIPasteboard.general.string = line.number
+                                        store.showToast("📞 已复制救援号码 \(line.number)")
+                                    } label: {
+                                        Text("拨打 \(line.number)")
+                                            .font(.system(size: 11.5, weight: .heavy, design: .rounded))
+                                            .foregroundStyle(.white)
+                                            .padding(.horizontal, 12)
+                                            .padding(.vertical, 6)
+                                            .background(AutoColor.rose, in: Capsule())
+                                    }
+                                    .buttonStyle(.plain)
+                                }
+                                .padding(.vertical, 4)
+                            }
+                        }
+                        .liquidGlassCard(cornerRadius: 26)
+                    }
+                    .padding(16)
+                }
+            }
+            .navigationTitle("🆘 事故应急与取证向导")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("完成") { dismiss() }
+                        .fontWeight(.bold)
+                }
             }
         }
         .preferredColorScheme(store.isDarkMode ? .dark : .light)
