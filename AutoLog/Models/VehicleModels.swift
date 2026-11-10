@@ -219,6 +219,44 @@ struct Vehicle: Identifiable, Codable, Equatable {
     var comprehensiveCostPerKm: Double {
         (totalRunningCosts + depreciation) / Double(max(1, odometer))
     }
+
+    var fiveYearResaleProjections: [ResaleYearProjection] {
+        let base = purchase.nakedPrice
+        let factors: [Double] = isEV ? [0.78, 0.65, 0.54, 0.45, 0.38] : [0.84, 0.74, 0.64, 0.56, 0.48]
+        let advices = [
+            "准新车折旧最快期，建议继续持有摊薄购置成本",
+            "车况黄金期，原厂质保内省心持有",
+            "⭐ 黄金换车窗口期：折旧斜率趋缓且未进大修期",
+            "适合追求极致性价比继续深耕，注意底盘橡胶件老化",
+            "残值进入平台期，每多开一年边际折旧成本极低"
+        ]
+        var result: [ResaleYearProjection] = []
+        var prev = purchase.totalLanded
+        for i in 0..<5 {
+            let val = (base * factors[i]).rounded()
+            let drop = max(0, prev - val)
+            result.append(
+                ResaleYearProjection(
+                    year: i + 1,
+                    retentionPct: Int((factors[i] * 100).rounded()),
+                    estimatedValue: val,
+                    annualDrop: drop,
+                    advice: advices[i]
+                )
+            )
+            prev = val
+        }
+        return result
+    }
+}
+
+struct ResaleYearProjection: Identifiable, Equatable {
+    var id: Int { year }
+    var year: Int
+    var retentionPct: Int
+    var estimatedValue: Double
+    var annualDrop: Double
+    var advice: String
 }
 
 enum SampleVehicles {

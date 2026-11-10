@@ -3,6 +3,7 @@ import SwiftUI
 struct LifecycleTCOView: View {
     @EnvironmentObject var store: VehicleStore
     @State private var showEarlyPayoffAlert = false
+    @State private var selectedProjectionYear: Int = 3
 
     var car: Vehicle { store.currentVehicle }
 
@@ -59,6 +60,9 @@ struct LifecycleTCOView: View {
 
             // 1.5 Iteration 02: Auto Loan & Financing Calculator Card
             loanFinancingCard
+
+            // 1.8 Iteration 04: 5-Year Depreciation Curve & Trade-In Advisor Card
+            depreciationAdvisorCard
 
             // 2. Total Cost of Ownership (TCO) Breakdown
             VStack(alignment: .leading, spacing: 12) {
@@ -216,6 +220,86 @@ struct LifecycleTCOView: View {
                 }
                 .buttonStyle(.plain)
             }
+        }
+        .liquidGlassCard(cornerRadius: 28)
+    }
+
+    // MARK: - Iteration 04: 5-Year Depreciation Curve & Trade-In Advisor Card
+    private var depreciationAdvisorCard: some View {
+        let projections = car.fiveYearResaleProjections
+        let currentProj = projections.first(where: { $0.year == selectedProjectionYear }) ?? projections[2]
+
+        return VStack(alignment: .leading, spacing: 11) {
+            HStack {
+                Text("📉 5年残值预测与黄金换车顾问")
+                    .font(.system(size: 14.5, weight: .bold))
+                Spacer()
+                StatusChip(text: "第3年最优换车拐点", color: AutoColor.emerald)
+            }
+
+            // 5-Year Bar & Selector Strip
+            HStack(alignment: .bottom, spacing: 8) {
+                ForEach(projections) { item in
+                    let isSelected = (item.year == selectedProjectionYear)
+                    Button {
+                        withAnimation(.spring(response: 0.28, dampingFraction: 0.8)) {
+                            selectedProjectionYear = item.year
+                        }
+                    } label: {
+                        VStack(spacing: 4) {
+                            Text("\(item.retentionPct)%")
+                                .font(.system(size: 10, weight: .bold, design: .rounded))
+                                .foregroundStyle(isSelected ? AutoColor.emerald : .secondary)
+
+                            RoundedRectangle(cornerRadius: 7, style: .continuous)
+                                .fill(
+                                    isSelected
+                                        ? LinearGradient(colors: [AutoColor.emerald, AutoColor.cyan], startPoint: .top, endPoint: .bottom)
+                                        : LinearGradient(colors: [Color.primary.opacity(0.18), Color.primary.opacity(0.08)], startPoint: .top, endPoint: .bottom)
+                                )
+                                .frame(height: CGFloat(item.retentionPct) * 0.58)
+
+                            Text("第\(item.year)年")
+                                .font(.system(size: 11, weight: isSelected ? .heavy : .semibold))
+                                .foregroundStyle(isSelected ? .primary : .secondary)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 6)
+                        .background(
+                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                .fill(isSelected ? AutoColor.emerald.opacity(0.12) : Color.clear)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                        .strokeBorder(isSelected ? AutoColor.emerald.opacity(0.4) : Color.clear, lineWidth: 1)
+                                )
+                        )
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+
+            // Selected Year Detail Banner
+            VStack(alignment: .leading, spacing: 4) {
+                HStack {
+                    Text(String(format: "第 %d 年预计残值：¥%.2f 万 (保值率 %d%%)", currentProj.year, currentProj.estimatedValue / 10000.0, currentProj.retentionPct))
+                        .font(.system(size: 12.5, weight: .heavy, design: .rounded))
+                    Spacer()
+                    Text("当年折旧 -¥\(Int(currentProj.annualDrop).formatted())")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundStyle(AutoColor.rose)
+                }
+                .monospacedDigit()
+
+                Text(currentProj.advice)
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundStyle(.secondary)
+            }
+            .padding(10)
+            .background(
+                RoundedRectangle(cornerRadius: 15, style: .continuous)
+                    .fill(Color.primary.opacity(0.045))
+                    .overlay(RoundedRectangle(cornerRadius: 15, style: .continuous).strokeBorder(Color.white.opacity(0.12), lineWidth: 1))
+            )
         }
         .liquidGlassCard(cornerRadius: 28)
     }
