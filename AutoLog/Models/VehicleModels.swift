@@ -23,6 +23,38 @@ enum QuickLogCategory: String, CaseIterable, Identifiable, Codable {
     }
 }
 
+struct AutoLoanPlan: Codable, Equatable {
+    var isFinanced: Bool
+    var loanPrincipal: Double
+    var annualRatePct: Double
+    var totalMonths: Int
+    var paidMonths: Int
+    var monthlyPayment: Double
+    var bankName: String
+
+    var remainingMonths: Int {
+        max(0, totalMonths - paidMonths)
+    }
+
+    var totalRepayment: Double {
+        monthlyPayment * Double(totalMonths)
+    }
+
+    var totalInterest: Double {
+        max(0, totalRepayment - loanPrincipal)
+    }
+
+    var remainingBalance: Double {
+        monthlyPayment * Double(remainingMonths)
+    }
+
+    var estimatedInterestSavedOnEarlyPayoff: Double {
+        guard remainingMonths > 0, totalMonths > 0 else { return 0 }
+        let ratio = Double(remainingMonths) / Double(totalMonths)
+        return (totalInterest * ratio * ratio * 0.85).rounded()
+    }
+}
+
 struct PurchaseInfo: Codable, Equatable {
     var nakedPrice: Double
     var tax: Double
@@ -33,6 +65,15 @@ struct PurchaseInfo: Codable, Equatable {
     var estimatedResale: Double
     var dealer: String
     var loanStatus: String
+    var loanPlan: AutoLoanPlan = AutoLoanPlan(
+        isFinanced: true,
+        loanPrincipal: 180000,
+        annualRatePct: 2.8,
+        totalMonths: 36,
+        paidMonths: 19,
+        monthlyPayment: 5420,
+        bankName: "宝马金融 / 招商银行车贷"
+    )
 }
 
 struct FuelLog: Identifiable, Codable, Equatable {

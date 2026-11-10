@@ -2,6 +2,7 @@ import SwiftUI
 
 struct LifecycleTCOView: View {
     @EnvironmentObject var store: VehicleStore
+    @State private var showEarlyPayoffAlert = false
 
     var car: Vehicle { store.currentVehicle }
 
@@ -55,6 +56,9 @@ struct LifecycleTCOView: View {
                 .font(.system(size: 11.5))
             }
             .liquidGlassCard(cornerRadius: 28, tint: AutoColor.purple)
+
+            // 1.5 Iteration 02: Auto Loan & Financing Calculator Card
+            loanFinancingCard
 
             // 2. Total Cost of Ownership (TCO) Breakdown
             VStack(alignment: .leading, spacing: 12) {
@@ -137,6 +141,83 @@ struct LifecycleTCOView: View {
             }
             .liquidGlassCard(cornerRadius: 28)
         }
+        .alert("🧮 车贷提前结清省息精算", isPresented: $showEarlyPayoffAlert) {
+            Button("办理提前结清 (省息 ¥\(Int(car.purchase.loanPlan.estimatedInterestSavedOnEarlyPayoff)))") {
+                store.settleLoanEarly()
+            }
+            Button("继续按月还供", role: .cancel) {}
+        } message: {
+            let plan = car.purchase.loanPlan
+            Text("当前剩余 \(plan.remainingMonths) 期，待还本息 ¥\(Int(plan.remainingBalance).formatted())。\n若本月一次性提前结清（免违约金期），预计可节省后续利息约 ¥\(Int(plan.estimatedInterestSavedOnEarlyPayoff).formatted())。")
+        }
+    }
+
+    // MARK: - Iteration 02: Auto Loan & Financing Card
+    private var loanFinancingCard: some View {
+        let plan = car.purchase.loanPlan
+        let progress = Double(plan.paidMonths) / Double(max(1, plan.totalMonths))
+
+        return VStack(alignment: .leading, spacing: 11) {
+            HStack {
+                Text("🏦 购车金融与分期还款精算")
+                    .font(.system(size: 14.5, weight: .bold))
+                Spacer()
+                StatusChip(
+                    text: plan.remainingMonths == 0 ? "已结清解押" : "已还 \(plan.paidMonths)/\(plan.totalMonths) 期",
+                    color: plan.remainingMonths == 0 ? AutoColor.emerald : AutoColor.cyan
+                )
+            }
+
+            HStack(spacing: 8) {
+                metricBox(label: "每期月供", value: "¥\(Int(plan.monthlyPayment).formatted())", color: AutoColor.cyan)
+                metricBox(label: "剩余本息", value: "¥\(Int(plan.remainingBalance).formatted())", color: .primary)
+                metricBox(label: "提前结清省息", value: "¥\(Int(plan.estimatedInterestSavedOnEarlyPayoff).formatted())", color: AutoColor.emerald)
+            }
+
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    Capsule()
+                        .fill(Color.primary.opacity(0.12))
+                    Capsule()
+                        .fill(
+                            LinearGradient(
+                                colors: [AutoColor.cyan, AutoColor.emerald],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .frame(width: geo.size.width * CGFloat(min(1.0, progress)))
+                }
+            }
+            .frame(height: 7)
+
+            HStack(spacing: 8) {
+                Button {
+                    store.recordLoanMonthlyPayment()
+                } label: {
+                    Text("💳 记一期月供扣款")
+                        .font(.system(size: 11.5, weight: .bold))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 8)
+                        .background(AutoColor.cyan.opacity(0.16), in: Capsule())
+                        .foregroundStyle(AutoColor.cyan)
+                }
+                .buttonStyle(.plain)
+
+                Button {
+                    showEarlyPayoffAlert = true
+                } label: {
+                    Text("🧮 提前还款省息试算")
+                        .font(.system(size: 11.5, weight: .bold))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 8)
+                        .background(AutoColor.emerald.opacity(0.16), in: Capsule())
+                        .foregroundStyle(AutoColor.emerald)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .liquidGlassCard(cornerRadius: 28)
     }
 
     private func metricBox(label: String, value: String, color: Color) -> some View {

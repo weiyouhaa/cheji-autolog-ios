@@ -110,6 +110,43 @@ final class VehicleStore: ObservableObject {
         }
     }
 
+    // MARK: - Iteration 02: Auto Loan & Financing Actions
+    func recordLoanMonthlyPayment() {
+        var car = currentVehicle
+        guard car.purchase.loanPlan.paidMonths < car.purchase.loanPlan.totalMonths else {
+            showToast("🎉 恭喜！本车分期贷款已全部结清！")
+            return
+        }
+        car.purchase.loanPlan.paidMonths += 1
+        let paid = car.purchase.loanPlan.paidMonths
+        let total = car.purchase.loanPlan.totalMonths
+        let monthly = car.purchase.loanPlan.monthlyPayment
+        car.purchase.loanStatus = paid >= total ? "已结清 (解押办结)" : "分期 \(paid)/\(total) 期"
+
+        let event = TimelineEvent(
+            date: Self.fullDateString(),
+            cat: "买车",
+            color: "purple",
+            title: "车贷月供扣款 · 第 \(paid)/\(total) 期",
+            cost: String(format: "-¥%.0f", monthly),
+            odo: "\(car.odometer.formatted()) km",
+            tags: [car.purchase.loanPlan.bankName, "剩余 \(total - paid) 期"]
+        )
+        car.timeline.insert(event, at: 0)
+        currentVehicle = car
+        showToast("💳 已记入第 \(paid)/\(total) 期车贷月供 (¥\(Int(monthly)))")
+    }
+
+    func settleLoanEarly() {
+        var car = currentVehicle
+        let saved = car.purchase.loanPlan.estimatedInterestSavedOnEarlyPayoff
+        car.purchase.loanPlan.paidMonths = car.purchase.loanPlan.totalMonths
+        car.purchase.loanPlan.isFinanced = false
+        car.purchase.loanStatus = "提前结清 (省息 ¥\(Int(saved)))"
+        currentVehicle = car
+        showToast("🎉 已办理车贷提前结清，累计节省利息约 ¥\(Int(saved))！")
+    }
+
     // MARK: - 1. Add Fuel / Charging Log
     func submitFuelLog(odo: Int, cost: Double, price: Double, subType: String, isFullTank: Bool, stationNote: String) {
         var car = currentVehicle
