@@ -1,0 +1,6 @@
+# Xcode build intermediates
+build/
+DerivedData/
+Payload/
+*.xcuserdata
+*.DS_Store

@@ -1,0 +1,1697 @@
+:root {
+  /* Studio Canvas Colors */
+  --studio-bg: #05060a;
+  --studio-grid: rgba(255, 255, 255, 0.028);
+  --studio-panel: rgba(18, 21, 30, 0.72);
+  --studio-border: rgba(255, 255, 255, 0.1);
+  --studio-text: #f5f7fb;
+  --studio-muted: #8e98ad;
+
+  /* ==========================================
+     iOS 27 "Liquid Glass" Material Tokens (Dark)
+     ========================================== */
+  --app-bg: #07090f;
+  --app-bg-elevated: rgba(20, 25, 38, 0.82);
+  --app-card: rgba(255, 255, 255, 0.065);
+  --app-card-hover: rgba(255, 255, 255, 0.1);
+  --app-card-inner: rgba(255, 255, 255, 0.045);
+  --app-glass: rgba(24, 30, 46, 0.58);
+  --app-glass-heavy: rgba(16, 20, 32, 0.72);
+  --app-border: rgba(255, 255, 255, 0.12);
+  --app-border-strong: rgba(255, 255, 255, 0.24);
+  --app-specular-top: rgba(255, 255, 255, 0.34);
+  --app-specular-side: rgba(255, 255, 255, 0.12);
+  --app-text: #f8fafc;
+  --app-text-secondary: rgba(226, 232, 240, 0.72);
+  --app-text-tertiary: rgba(148, 163, 184, 0.62);
+
+  /* Ambient Mesh Orbs inside Phone (for Liquid Glass refraction) */
+  --orb-1: rgba(255, 94, 43, 0.26);
+  --orb-2: rgba(56, 189, 248, 0.22);
+  --orb-3: rgba(139, 92, 246, 0.20);
+
+  /* Brand & Automotive Semantic Accents */
+  --accent-primary: #ff5e2b;
+  --accent-primary-soft: rgba(255, 94, 43, 0.18);
+  --accent-blue: #38bdf8;
+  --accent-blue-soft: rgba(56, 189, 248, 0.18);
+  --accent-emerald: #34d399;
+  --accent-emerald-soft: rgba(52, 211, 153, 0.18);
+  --accent-amber: #fbbf24;
+  --accent-amber-soft: rgba(251, 191, 36, 0.18);
+  --accent-rose: #fb7185;
+  --accent-rose-soft: rgba(251, 113, 133, 0.18);
+  --accent-purple: #c084fc;
+  --accent-purple-soft: rgba(192, 132, 252, 0.18);
+
+  /* Typography */
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Rounded", "SF Pro Text", "PingFang SC", "Hiragino Sans GB", sans-serif;
+  --font-mono: "SF Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  /* iOS 27 Specular Shadows */
+  --phone-shadow: 0 40px 100px -18px rgba(0, 0, 0, 0.82), 0 0 0 1px rgba(255, 255, 255, 0.12);
+  --liquid-glass-shadow:
+    inset 0 1px 0 0 var(--app-specular-top),
+    inset 1px 0 0 0 var(--app-specular-side),
+    inset 0 -1px 0 0 rgba(255, 255, 255, 0.05),
+    0 14px 32px -8px rgba(0, 0, 0, 0.38);
+  --floating-pill-shadow:
+    inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.42),
+    inset 0 -1px 1px 0 rgba(255, 255, 255, 0.1),
+    0 20px 44px -6px rgba(0, 0, 0, 0.65),
+    0 0 0 1px rgba(255, 255, 255, 0.16);
+}
+
+/* ==========================================
+   iOS 27 "Liquid Glass" Material Tokens (Light)
+   ========================================== */
+[data-theme="light"] {
+  --app-bg: #eef2f9;
+  --app-bg-elevated: rgba(255, 255, 255, 0.86);
+  --app-card: rgba(255, 255, 255, 0.66);
+  --app-card-hover: rgba(255, 255, 255, 0.82);
+  --app-card-inner: rgba(255, 255, 255, 0.55);
+  --app-glass: rgba(255, 255, 255, 0.68);
+  --app-glass-heavy: rgba(255, 255, 255, 0.78);
+  --app-border: rgba(255, 255, 255, 0.75);
+  --app-border-strong: rgba(15, 23, 42, 0.14);
+  --app-specular-top: rgba(255, 255, 255, 0.95);
+  --app-specular-side: rgba(255, 255, 255, 0.65);
+  --app-text: #0f172a;
+  --app-text-secondary: #475569;
+  --app-text-tertiary: #64748b;
+
+  --orb-1: rgba(255, 110, 64, 0.22);
+  --orb-2: rgba(56, 189, 248, 0.25);
+  --orb-3: rgba(168, 85, 247, 0.18);
+
+  --accent-primary: #f04812;
+  --accent-blue: #0284c7;
+  --accent-emerald: #059669;
+  --accent-amber: #d97706;
+  --accent-rose: #e11d48;
+  --accent-purple: #7c3aed;
+
+  --liquid-glass-shadow:
+    inset 0 1.5px 0 0 rgba(255, 255, 255, 0.95),
+    inset 1px 0 0 0 rgba(255, 255, 255, 0.7),
+    0 12px 28px -6px rgba(15, 23, 42, 0.08),
+    0 0 0 1px rgba(15, 23, 42, 0.05);
+  --floating-pill-shadow:
+    inset 0 1.5px 1px 0 #ffffff,
+    0 18px 38px -6px rgba(15, 23, 42, 0.16),
+    0 0 0 1px rgba(15, 23, 42, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--studio-bg);
+  background-image:
+    radial-gradient(circle at 16% 12%, rgba(255, 94, 43, 0.12), transparent 38%),
+    radial-gradient(circle at 84% 82%, rgba(56, 189, 248, 0.11), transparent 42%),
+    linear-gradient(var(--studio-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--studio-grid) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 32px 32px, 32px 32px;
+  color: var(--studio-text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ==========================================
+   TOP STUDIO TOOLBAR
+   ========================================== */
+.studio-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 28px;
+  background: rgba(8, 10, 16, 0.78);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border-bottom: 1px solid var(--studio-border);
+}
+
+.studio-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.studio-logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 13px;
+  background: linear-gradient(135deg, #ff7442 0%, #e03a0c 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.5),
+    0 6px 18px rgba(255, 94, 43, 0.4);
+  color: #fff;
+}
+
+.studio-title-group h1 {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.studio-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2.5px 10px;
+  border-radius: 99px;
+  background: linear-gradient(135deg, rgba(255, 94, 43, 0.22), rgba(192, 132, 252, 0.22));
+  color: #ff9875;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+.studio-title-group p {
+  font-size: 12px;
+  color: var(--studio-muted);
+  margin-top: 2px;
+}
+
+.studio-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.control-pill-group {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 99px;
+  padding: 3px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.control-pill {
+  border: none;
+  background: transparent;
+  color: var(--studio-muted);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 13px;
+  border-radius: 99px;
+  cursor: pointer;
+  transition: all 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: inherit;
+}
+
+.control-pill:hover {
+  color: var(--studio-text);
+}
+
+.control-pill.active {
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    0 3px 10px rgba(0, 0, 0, 0.3);
+}
+
+.studio-btn {
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--studio-text);
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 7px 15px;
+  border-radius: 99px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.studio-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.studio-btn-primary {
+  background: linear-gradient(135deg, #ff6a38, #e03a0c);
+  border-color: rgba(255, 160, 122, 0.5);
+  color: #fff;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    0 6px 18px rgba(255, 94, 43, 0.38);
+}
+
+.studio-btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    0 8px 22px rgba(255, 94, 43, 0.5);
+}
+
+/* ==========================================
+   MAIN WORKSPACE LAYOUT
+   ========================================== */
+.studio-workspace {
+  max-width: 1460px;
+  margin: 0 auto;
+  padding: 26px 24px 64px;
+}
+
+.interactive-layout {
+  display: grid;
+  grid-template-columns: 310px minmax(410px, 440px) 1fr;
+  gap: 28px;
+  align-items: start;
+}
+
+@media (max-width: 1200px) {
+  .interactive-layout {
+    grid-template-columns: 1fr minmax(400px, 430px);
+  }
+  .spec-sidebar-right {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 860px) {
+  .interactive-layout {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+  .spec-sidebar-left,
+  .spec-sidebar-right {
+    width: 100%;
+    max-width: 520px;
+  }
+}
+
+.studio-card {
+  background: var(--studio-panel);
+  border: 1px solid var(--studio-border);
+  border-radius: 24px;
+  padding: 20px;
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.studio-card + .studio-card {
+  margin-top: 16px;
+}
+
+.studio-card-title {
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--studio-muted);
+  font-weight: 700;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.screen-nav-list {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.screen-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 10px 12px;
+  border-radius: 16px;
+  border: 1px solid transparent;
+  background: rgba(255, 255, 255, 0.025);
+  color: var(--studio-text);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.screen-nav-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.screen-nav-item.active {
+  background: rgba(255, 94, 43, 0.15);
+  border-color: rgba(255, 94, 43, 0.4);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.screen-nav-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.07);
+  font-size: 15px;
+  flex-shrink: 0;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.screen-nav-item.active .screen-nav-icon {
+  background: linear-gradient(135deg, #ff6c3b, #e03a0c);
+  color: #fff;
+}
+
+.screen-nav-meta strong {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.screen-nav-meta span {
+  display: block;
+  font-size: 11.5px;
+  color: var(--studio-muted);
+  margin-top: 2px;
+}
+
+/* ==========================================
+   iPHONE CHASSIS & iOS 27 LIQUID GLASS SCREEN
+   ========================================== */
+.phone-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.iphone-frame {
+  position: relative;
+  width: 393px;
+  height: 852px;
+  border-radius: 60px;
+  padding: 11px;
+  background: linear-gradient(145deg, #474e5e 0%, #1d212a 35%, #12151b 70%, #373d4b 100%);
+  box-shadow: var(--phone-shadow);
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.iphone-bezel {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 50px;
+  background: #000;
+  padding: 2px;
+  overflow: hidden;
+}
+
+.iphone-screen {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 48px;
+  background-color: var(--app-bg);
+  /* iOS 27 Spatial Ambient Mesh Wallpaper for Liquid Glass Refraction */
+  background-image:
+    radial-gradient(circle at 18% 14%, var(--orb-1), transparent 44%),
+    radial-gradient(circle at 88% 36%, var(--orb-2), transparent 46%),
+    radial-gradient(circle at 25% 78%, var(--orb-3), transparent 48%);
+  color: var(--app-text);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: background-color 0.35s ease, color 0.35s ease;
+}
+
+/* Hardware Buttons */
+.hw-btn {
+  position: absolute;
+  background: linear-gradient(180deg, #4b5263, #232730);
+  border-radius: 2px;
+}
+.hw-btn-action { left: -3px; top: 162px; width: 3px; height: 28px; }
+.hw-btn-vol-up { left: -3px; top: 210px; width: 3px; height: 52px; }
+.hw-btn-vol-dn { left: -3px; top: 274px; width: 3px; height: 52px; }
+.hw-btn-power  { right: -3px; top: 230px; width: 3px; height: 76px; }
+
+/* iOS 27 Status Bar & Liquid Dynamic Island */
+.ios-status-bar {
+  position: relative;
+  z-index: 30;
+  height: 52px;
+  padding: 14px 26px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  flex-shrink: 0;
+}
+
+.dynamic-island {
+  position: absolute;
+  left: 50%;
+  top: 11px;
+  transform: translateX(-50%);
+  width: 126px;
+  height: 34px;
+  background: rgba(5, 7, 12, 0.88);
+  backdrop-filter: blur(20px);
+  border-radius: 99px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  box-shadow:
+    inset 0 1px 0.5px rgba(255, 255, 255, 0.28),
+    0 4px 14px rgba(0, 0, 0, 0.45);
+  transition: all 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+  cursor: pointer;
+}
+
+.dynamic-island:hover {
+  width: 172px;
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.4),
+    0 6px 18px rgba(52, 211, 153, 0.25);
+}
+
+.di-live-indicator {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #34d399;
+}
+
+.di-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #34d399;
+  box-shadow: 0 0 8px #34d399;
+}
+
+.di-camera {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #38bdf8, #090d16 72%);
+}
+
+.status-icons {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* ==========================================
+   APP SCROLL VIEWPORT & iOS 27 GLASS HEADER
+   ========================================== */
+.app-scroll-container {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 4px 15px 112px;
+  scroll-behavior: smooth;
+}
+
+.app-scroll-container::-webkit-scrollbar {
+  width: 0px;
+}
+
+.app-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 2px 12px;
+}
+
+/* iOS 27 Liquid Glass Capsule Selector */
+.vehicle-selector-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 13px 6px 7px;
+  background: var(--app-card);
+  backdrop-filter: blur(30px) saturate(190%);
+  -webkit-backdrop-filter: blur(30px) saturate(190%);
+  border: 1px solid var(--app-border);
+  box-shadow: var(--liquid-glass-shadow);
+  border-radius: 99px;
+  cursor: pointer;
+  transition: all 0.22s ease;
+  color: var(--app-text);
+  font-family: inherit;
+}
+
+.vehicle-selector-pill:hover {
+  transform: scale(1.02);
+  border-color: var(--app-border-strong);
+}
+
+.vehicle-plate-mini {
+  font-size: 10.5px;
+  font-weight: 800;
+  padding: 3px 7px;
+  border-radius: 99px;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: #fff;
+  letter-spacing: 0.03em;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.vehicle-plate-mini.ev {
+  background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.vehicle-selector-name {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.top-bar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* iOS 27 Liquid Glass Orb Button */
+.icon-circle-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--app-card);
+  backdrop-filter: blur(28px) saturate(190%);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
+  border: 1px solid var(--app-border);
+  box-shadow: var(--liquid-glass-shadow);
+  color: var(--app-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.icon-circle-btn:hover {
+  transform: scale(1.06);
+  background: var(--app-card-hover);
+}
+
+.notif-dot {
+  position: absolute;
+  top: 6px;
+  right: 7px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+  box-shadow: 0 0 6px var(--accent-primary);
+}
+
+/* ==========================================
+   iOS 27 LIQUID GLASS CARDS & COMPONENTS
+   ========================================== */
+.ios-card {
+  background: var(--app-card);
+  backdrop-filter: blur(36px) saturate(195%);
+  -webkit-backdrop-filter: blur(36px) saturate(195%);
+  border: 1px solid var(--app-border);
+  border-radius: 28px;
+  padding: 16px;
+  box-shadow: var(--liquid-glass-shadow);
+  margin-bottom: 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+.ios-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.ios-card-title {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ios-card-link {
+  font-size: 12px;
+  color: var(--accent-primary);
+  font-weight: 600;
+  background: rgba(255, 94, 43, 0.12);
+  padding: 4px 10px;
+  border-radius: 99px;
+  border: 1px solid rgba(255, 94, 43, 0.25);
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.18s ease;
+}
+
+.ios-card-link:hover {
+  background: rgba(255, 94, 43, 0.22);
+}
+
+/* Hero Vehicle Spatial Glass Card */
+.hero-vehicle-card {
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.13) 0%,
+    rgba(255, 255, 255, 0.04) 52%,
+    rgba(255, 94, 43, 0.11) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  padding: 18px 16px 16px;
+}
+
+[data-theme="light"] .hero-vehicle-card {
+  background: linear-gradient(
+    145deg,
+    rgba(24, 34, 56, 0.92) 0%,
+    rgba(15, 23, 42, 0.96) 65%,
+    rgba(67, 28, 24, 0.92) 100%
+  );
+  color: #f8fafc;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+}
+
+.hero-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.hero-car-title {
+  font-size: 18.5px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.hero-car-sub {
+  font-size: 11.5px;
+  color: rgba(255, 255, 255, 0.68);
+  margin-top: 3px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 99px;
+  backdrop-filter: blur(16px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28);
+}
+
+.chip-emerald {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+  border: 1px solid rgba(52, 211, 153, 0.35);
+}
+
+.chip-amber {
+  background: rgba(245, 158, 11, 0.2);
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.35);
+}
+
+.chip-blue {
+  background: rgba(56, 189, 248, 0.2);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+}
+
+.chip-rose {
+  background: rgba(244, 63, 94, 0.2);
+  color: #fb7185;
+  border: 1px solid rgba(251, 113, 133, 0.35);
+}
+
+.chip-purple {
+  background: rgba(168, 85, 247, 0.2);
+  color: #c084fc;
+  border: 1px solid rgba(192, 132, 252, 0.35);
+}
+
+/* Car Visual SVG Stage */
+.hero-car-visual {
+  margin: 10px 0 8px;
+  position: relative;
+  height: 84px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-car-glow {
+  position: absolute;
+  width: 230px;
+  height: 36px;
+  bottom: 4px;
+  background: radial-gradient(ellipse at center, rgba(255, 94, 43, 0.38), transparent 72%);
+  filter: blur(9px);
+}
+
+/* iOS 27 Liquid Glass Odometer Capsule */
+.odometer-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  border-radius: 20px;
+  padding: 10px 14px;
+  margin-top: 6px;
+}
+
+.odo-left {
+  display: flex;
+  flex-direction: column;
+}
+
+.odo-label {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.58);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+}
+
+.odo-digits {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  margin-top: 1px;
+}
+
+.odo-number {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: #fff;
+}
+
+.odo-unit {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 600;
+}
+
+.odo-right {
+  text-align: right;
+}
+
+.odo-sub-stat {
+  font-size: 12px;
+  font-weight: 700;
+  color: #ff9470;
+}
+
+.odo-sub-desc {
+  font-size: 10.5px;
+  color: rgba(255, 255, 255, 0.58);
+  margin-top: 2px;
+}
+
+/* 4-Grid Liquid Glass Bento */
+.bento-grid-2x2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.bento-tile {
+  background: var(--app-card);
+  backdrop-filter: blur(36px) saturate(195%);
+  -webkit-backdrop-filter: blur(36px) saturate(195%);
+  border: 1px solid var(--app-border);
+  border-radius: 26px;
+  padding: 14px;
+  cursor: pointer;
+  transition: all 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+  box-shadow: var(--liquid-glass-shadow);
+}
+
+.bento-tile:hover {
+  transform: translateY(-2px) scale(1.01);
+  background: var(--app-card-hover);
+  border-color: var(--app-border-strong);
+}
+
+.bento-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.bento-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.bento-tag {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2.5px 7px;
+  border-radius: 99px;
+}
+
+.bento-value {
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.bento-unit {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--app-text-secondary);
+  margin-left: 2px;
+}
+
+.bento-label {
+  font-size: 11.5px;
+  color: var(--app-text-secondary);
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+.bento-foot {
+  font-size: 10.5px;
+  color: var(--app-text-tertiary);
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 600;
+}
+
+/* Progress Bar with Liquid Glow */
+.progress-track {
+  width: 100%;
+  height: 6px;
+  background: rgba(148, 163, 184, 0.18);
+  border-radius: 99px;
+  overflow: hidden;
+  margin-top: 6px;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ==========================================
+   TIMELINE ITEMS
+   ========================================== */
+.timeline-list {
+  position: relative;
+  padding-left: 18px;
+}
+
+.timeline-list::before {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 8px;
+  bottom: 8px;
+  width: 1.5px;
+  background: linear-gradient(180deg, var(--app-border-strong), rgba(255,255,255,0.04));
+}
+
+.timeline-node {
+  position: relative;
+  padding-bottom: 12px;
+}
+
+.timeline-node:last-child {
+  padding-bottom: 2px;
+}
+
+.timeline-dot {
+  position: absolute;
+  left: -16px;
+  top: 5px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.timeline-card-inner {
+  background: var(--app-card-inner);
+  border: 1px solid var(--app-border);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  border-radius: 18px;
+  padding: 10px 12px;
+}
+
+.timeline-row-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.timeline-title {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.timeline-cost {
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.timeline-meta {
+  font-size: 11px;
+  color: var(--app-text-secondary);
+  margin-top: 3px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+
+.timeline-badges {
+  display: flex;
+  gap: 5px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+
+.micro-tag {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2.5px 7px;
+  border-radius: 99px;
+  background: rgba(148, 163, 184, 0.14);
+  color: var(--app-text-secondary);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* ==========================================
+   iOS 27 LIQUID GLASS CAPSULE SEGMENTED CONTROL
+   ========================================== */
+.segmented-control {
+  display: flex;
+  background: var(--app-card);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  padding: 3.5px;
+  border-radius: 99px;
+  border: 1px solid var(--app-border);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
+  margin-bottom: 12px;
+}
+
+.seg-btn {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: var(--app-text-secondary);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6.5px 6px;
+  border-radius: 99px;
+  cursor: pointer;
+  transition: all 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+  font-family: inherit;
+}
+
+.seg-btn.active {
+  background: rgba(255, 255, 255, 0.18);
+  color: var(--app-text);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    0 3px 10px rgba(0, 0, 0, 0.22);
+}
+
+[data-theme="light"] .seg-btn.active {
+  background: #ffffff;
+  box-shadow:
+    inset 0 1px 0 #ffffff,
+    0 2px 8px rgba(15, 23, 42, 0.1);
+}
+
+/* Maintenance Component List */
+.maint-item {
+  padding: 11px 13px;
+  border-radius: 18px;
+  background: var(--app-card-inner);
+  border: 1px solid var(--app-border);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.maint-item:hover {
+  border-color: var(--app-border-strong);
+  transform: translateY(-1px);
+}
+
+.maint-item:last-child {
+  margin-bottom: 0;
+}
+
+.maint-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.maint-name {
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.maint-pct {
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.maint-sub {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--app-text-secondary);
+  margin-top: 5px;
+}
+
+/* ==========================================
+   iOS 27 FLOATING LIQUID GLASS CAPSULE TAB BAR
+   ========================================== */
+.ios-tab-bar {
+  position: absolute;
+  bottom: 20px;
+  left: 14px;
+  right: 14px;
+  height: 64px;
+  padding: 5px 8px;
+  background: var(--app-glass-heavy);
+  backdrop-filter: blur(40px) saturate(210%);
+  -webkit-backdrop-filter: blur(40px) saturate(210%);
+  border-radius: 999px;
+  box-shadow: var(--floating-pill-shadow);
+  display: grid;
+  grid-template-columns: 1fr 1fr 56px 1fr 1fr;
+  align-items: center;
+  z-index: 40;
+}
+
+.tab-btn {
+  border: none;
+  background: transparent;
+  color: var(--app-text-tertiary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  height: 52px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+  position: relative;
+}
+
+.tab-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.tab-btn span {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.tab-btn.active {
+  color: var(--app-text);
+  background: rgba(255, 255, 255, 0.13);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    0 4px 12px rgba(0, 0, 0, 0.18);
+}
+
+[data-theme="light"] .tab-btn.active {
+  background: rgba(255, 255, 255, 0.88);
+  color: var(--accent-primary);
+  box-shadow:
+    inset 0 1px 0 #ffffff,
+    0 4px 12px rgba(15, 23, 42, 0.08);
+}
+
+.tab-add-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* iOS 27 Specular Liquid Orb '+' Button */
+.tab-add-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  background: radial-gradient(circle at 32% 24%, #ff9369 0%, #ff5a26 52%, #d93205 100%);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    inset 0 2px 3px rgba(255, 255, 255, 0.65),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.35),
+    0 8px 20px rgba(255, 90, 38, 0.52);
+  cursor: pointer;
+  transition: all 0.24s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.tab-add-btn:hover {
+  transform: scale(1.08) translateY(-2px);
+  box-shadow:
+    inset 0 2px 4px rgba(255, 255, 255, 0.75),
+    0 12px 26px rgba(255, 90, 38, 0.68);
+}
+
+.ios-home-indicator {
+  position: absolute;
+  bottom: 7px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 132px;
+  height: 5px;
+  border-radius: 99px;
+  background: var(--app-text);
+  opacity: 0.25;
+  z-index: 50;
+  pointer-events: none;
+}
+
+/* ==========================================
+   iOS 27 SPATIAL LIQUID GLASS SHEET ("+ 记一笔")
+   ========================================== */
+.ios-sheet-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(3, 5, 10, 0.52);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  z-index: 60;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.28s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 8px;
+}
+
+.ios-sheet-backdrop.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Floating Concentric Squircle Sheet in iOS 27 */
+.ios-sheet {
+  background: var(--app-bg-elevated);
+  backdrop-filter: blur(48px) saturate(210%);
+  -webkit-backdrop-filter: blur(48px) saturate(210%);
+  border: 1px solid var(--app-border-strong);
+  box-shadow:
+    inset 0 1.5px 0 0 var(--app-specular-top),
+    0 -16px 48px rgba(0, 0, 0, 0.55);
+  border-radius: 38px;
+  padding: 10px 16px 22px;
+  transform: translateY(104%) scale(0.96);
+  transition: transform 0.36s cubic-bezier(0.22, 1, 0.36, 1);
+  max-height: 86%;
+  overflow-y: auto;
+}
+
+.ios-sheet::-webkit-scrollbar {
+  width: 0px;
+}
+
+.ios-sheet-backdrop.open .ios-sheet {
+  transform: translateY(0) scale(1);
+}
+
+.sheet-grabber {
+  width: 40px;
+  height: 5px;
+  border-radius: 99px;
+  background: rgba(148, 163, 184, 0.42);
+  margin: 0 auto 10px;
+}
+
+.sheet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.sheet-title-wrap {
+  display: flex;
+  flex-direction: column;
+}
+
+.sheet-title {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.sheet-subtitle {
+  font-size: 11px;
+  color: var(--app-text-secondary);
+  margin-top: 1px;
+}
+
+.sheet-close {
+  border: 1px solid var(--app-border);
+  background: var(--app-card);
+  color: var(--app-text-secondary);
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+/* 6-Category Liquid Pill Selector */
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 7px;
+  margin-bottom: 12px;
+}
+
+.cat-pill {
+  padding: 8px 6px;
+  border-radius: 99px;
+  border: 1px solid var(--app-border);
+  background: var(--app-card);
+  color: var(--app-text-secondary);
+  font-size: 11.5px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+
+.cat-pill:hover {
+  border-color: var(--app-border-strong);
+  color: var(--app-text);
+}
+
+.cat-pill.active {
+  background: linear-gradient(135deg, rgba(255, 94, 43, 0.26), rgba(255, 94, 43, 0.1));
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    0 4px 12px rgba(255, 94, 43, 0.2);
+}
+
+/* Dynamic Form Container inside Quick Log */
+.dynamic-form-stage {
+  animation: fadeSlideIn 0.22s ease;
+}
+
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.form-section-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--app-text-secondary);
+  margin: 8px 0 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sub-option-pills {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.sub-pill {
+  padding: 5px 10px;
+  border-radius: 99px;
+  border: 1px solid var(--app-border);
+  background: var(--app-card-inner);
+  color: var(--app-text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.16s ease;
+}
+
+.sub-pill.selected {
+  background: rgba(56, 189, 248, 0.2);
+  border-color: var(--accent-blue);
+  color: var(--accent-blue);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+.check-chip-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.check-chip {
+  padding: 7px 9px;
+  border-radius: 13px;
+  border: 1px solid var(--app-border);
+  background: var(--app-card-inner);
+  color: var(--app-text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  transition: all 0.16s ease;
+}
+
+.check-chip.checked {
+  background: rgba(52, 211, 153, 0.16);
+  border-color: var(--accent-emerald);
+  color: var(--app-text);
+}
+
+.check-box-indicator {
+  width: 15px;
+  height: 15px;
+  border-radius: 5px;
+  border: 1.5px solid var(--app-text-tertiary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  flex-shrink: 0;
+}
+
+.check-chip.checked .check-box-indicator {
+  background: var(--accent-emerald);
+  border-color: var(--accent-emerald);
+  color: #06281e;
+  font-weight: 900;
+}
+
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 9px;
+  margin-bottom: 9px;
+}
+
+.form-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 9px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.form-group label {
+  font-size: 10.5px;
+  color: var(--app-text-secondary);
+  font-weight: 600;
+}
+
+.ios-input {
+  width: 100%;
+  background: var(--app-card);
+  border: 1px solid var(--app-border-strong);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.18);
+  border-radius: 14px;
+  padding: 8.5px 11px;
+  color: var(--app-text);
+  font-size: 13px;
+  font-weight: 700;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.18s ease;
+}
+
+.ios-input:focus {
+  border-color: var(--accent-primary);
+}
+
+.calc-preview-bar {
+  background: linear-gradient(135deg, rgba(52, 211, 153, 0.15), rgba(56, 189, 248, 0.1));
+  border: 1px solid rgba(52, 211, 153, 0.32);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  border-radius: 16px;
+  padding: 9px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 11px;
+  margin: 10px 0 12px;
+  flex-wrap: wrap;
+}
+
+.submit-log-btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 99px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: linear-gradient(135deg, #ff6c3b 0%, #e03a0c 100%);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  box-shadow:
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.5),
+    0 8px 22px rgba(255, 94, 43, 0.42);
+  transition: transform 0.18s ease;
+}
+
+.submit-log-btn:hover {
+  transform: scale(1.01);
+}
+
+/* ==========================================
+   MULTI-SCREEN ARTBOARD GALLERY (Mode B)
+   ========================================== */
+.artboard-gallery {
+  display: none;
+}
+
+.artboard-gallery.active {
+  display: block;
+}
+
+.interactive-layout.hidden {
+  display: none;
+}
+
+.gallery-intro {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(365px, 1fr));
+  gap: 32px;
+  justify-items: center;
+}
+
+.artboard-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.artboard-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--studio-text);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--studio-border);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  padding: 6px 14px;
+  border-radius: 99px;
+}
+
+.artboard-num {
+  color: var(--accent-primary);
+  font-family: var(--font-mono);
+  font-weight: 700;
+}
+
+.iphone-frame.gallery-scale {
+  transform: scale(0.92);
+  transform-origin: top center;
+  margin-bottom: -55px;
+}
+
+/* Toast notification inside phone */
+.app-toast {
+  position: absolute;
+  top: 58px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-20px);
+  background: rgba(16, 185, 129, 0.92);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    0 10px 26px rgba(0, 0, 0, 0.45);
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 700;
+  z-index: 80;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.26s cubic-bezier(0.22, 1, 0.36, 1);
+  white-space: nowrap;
+}
+
+.app-toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Design Spec Tokens Table & Swatches */
+.swatch-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.swatch-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-size: 10.5px;
+  color: var(--studio-muted);
+}
+
+.swatch-circle {
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.45);
+}
+
+.feature-checklist {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.feature-checklist li {
+  font-size: 12.5px;
+  color: var(--studio-muted);
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  line-height: 1.45;
+}
+
+.feature-checklist li strong {
+  color: var(--studio-text);
+}

@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>车记 AutoLog — iOS 27 Liquid Glass 车辆全生命周期记录 App 设计稿</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- ==========================================
+       TOP DESIGN STUDIO BAR
+       ========================================== -->
+  <header class="studio-header">
+    <div class="studio-brand">
+      <div class="studio-logo">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/>
+          <circle cx="7" cy="17" r="2"/>
+          <path d="M9 17h6"/>
+          <circle cx="17" cy="17" r="2"/>
+        </svg>
+      </div>
+      <div class="studio-title-group">
+        <h1>
+          车记 AutoLog
+          <span class="studio-badge">iOS 27 Liquid Glass</span>
+        </h1>
+        <p>液态光学玻璃材质 · 悬浮胶囊导航 · 从买车落户、上路、保险到里程油耗与维保的全生命周期座舱</p>
+      </div>
+    </div>
+
+    <div class="studio-controls">
+      <!-- Studio View Mode Switcher -->
+      <div class="control-pill-group">
+        <button class="control-pill mode-pill active" data-mode="interactive" onclick="setStudioMode('interactive')">
+          📱 交互式单机体验
+        </button>
+        <button class="control-pill mode-pill" data-mode="gallery" onclick="setStudioMode('gallery')">
+          🖼️ 全量画板总览 (5屏同览)
+        </button>
+      </div>
+
+      <!-- Vehicle Type Switcher (Fuel vs EV) -->
+      <div class="control-pill-group">
+        <button class="control-pill vehicle-switch-btn active" data-vid="bmw330" onclick="switchVehicle('bmw330')">
+          ⛽ BMW 330Li (燃油)
+        </button>
+        <button class="control-pill vehicle-switch-btn" data-vid="nioEt5t" onclick="switchVehicle('nioEt5t')">
+          ⚡ 蔚来 ET5T (纯电)
+        </button>
+      </div>
+
+      <!-- Dark / Light iOS 27 Theme Switcher -->
+      <div class="control-pill-group">
+        <button class="control-pill theme-pill active" data-theme="dark" onclick="toggleAppTheme('dark')">
+          🌙 曜石液态玻璃
+        </button>
+        <button class="control-pill theme-pill" data-theme="light" onclick="toggleAppTheme('light')">
+          ☀️ 冰晶液态玻璃
+        </button>
+      </div>
+
+      <button class="studio-btn studio-btn-primary" onclick="openQuickLog('加油')">
+        ＋ 体验 6 类动态记一笔
+      </button>
+    </div>
+  </header>
+
+  <!-- ==========================================
+       MAIN STUDIO WORKSPACE
+       ========================================== -->
+  <main class="studio-workspace">
+
+    <!-- MODE A: INTERACTIVE SINGLE PHONE + SPEC SIDEBARS -->
+    <section id="interactive-stage" class="interactive-layout">
+
+      <!-- Left Sidebar: Screen Navigator & Lifecycle Architecture -->
+      <aside class="spec-sidebar-left">
+        <div class="studio-card">
+          <div class="studio-card-title">
+            <span>核心屏幕导航 (点击切换)</span>
+            <span>5 Tabs + 6 Forms</span>
+          </div>
+          <div class="screen-nav-list">
+            <button class="screen-nav-item active" data-screen="cockpit" onclick="switchTab('cockpit')">
+              <div class="screen-nav-icon">🏎️</div>
+              <div class="screen-nav-meta">
+                <strong>01 · 爱车中枢 (液态玻璃总览)</strong>
+                <span>车辆状态、里程牌、四维Bento与近期动态</span>
+              </div>
+            </button>
+
+            <button class="screen-nav-item" data-screen="lifecycle" onclick="switchTab('lifecycle')">
+              <div class="screen-nav-icon">🎖️</div>
+              <div class="screen-nav-meta">
+                <strong>02 · 买车与全周期档案</strong>
+                <span>裸车/购置税/上牌、TCO总成本与时间轴</span>
+              </div>
+            </button>
+
+            <button class="screen-nav-item" data-screen="fuel" onclick="switchTab('fuel')">
+              <div class="screen-nav-icon">⛽</div>
+              <div class="screen-nav-meta">
+                <strong>03 · 里程与油耗/电耗实验室</strong>
+                <span>跳枪油耗曲线、单公里成本、油价监控</span>
+              </div>
+            </button>
+
+            <button class="screen-nav-item" data-screen="maintenance" onclick="switchTab('maintenance')">
+              <div class="screen-nav-icon">🔧</div>
+              <div class="screen-nav-meta">
+                <strong>04 · 保养健康度与维修工单</strong>
+                <span>机油/轮胎/火花塞里程×时间双维寿命条</span>
+              </div>
+            </button>
+
+            <button class="screen-nav-item" data-screen="insurance" onclick="switchTab('insurance')">
+              <div class="screen-nav-icon">🛡️</div>
+              <div class="screen-nav-meta">
+                <strong>05 · 保险保单与上路车务</strong>
+                <span>交强+商业险明细、NCD折扣、年检与违章</span>
+              </div>
+            </button>
+
+            <button class="screen-nav-item" onclick="openQuickLog('保养')">
+              <div class="screen-nav-icon" style="background:rgba(255,94,43,0.22);color:#ff5e2b;">➕</div>
+              <div class="screen-nav-meta">
+                <strong>06 · 动态表单记一笔 (6套专属字段)</strong>
+                <span>加油/保养重置/维修理赔/车险/停车/改装</span>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <div class="studio-card">
+          <div class="studio-card-title">
+            <span>「＋记一笔」6 大专属表单说明</span>
+            <span>Dynamic Schema</span>
+          </div>
+          <ul class="feature-checklist">
+            <li>
+              <span>⛽</span>
+              <div><strong>加油/补能：</strong>选标号(95#/98#/换电/谷电)、满箱跳枪开关、里程+金额+单价三联动算百公里油耗。</div>
+            </li>
+            <li>
+              <span>🔧</span>
+              <div><strong>定期保养：</strong>直接列出本车易损件多选框（如机油、火花塞、四轮换位），<strong>勾选提交即重置对应配件寿命至 100%</strong>。</div>
+            </li>
+            <li>
+              <span>🛠️</span>
+              <div><strong>故障维修：</strong>选故障部位（轮胎/电瓶/钣金/底盘）与理赔方式（自费/质保索赔/走车损险），实时提示次年保费影响。</div>
+            </li>
+            <li>
+              <span>🛡️</span>
+              <div><strong>续保/上路/改装：</strong>车险支持勾选险种组合算日均保费；上路支持停车/ETC/违章记分切换；买车支持车衣/轮毂改装入库。</div>
+            </li>
+          </ul>
+        </div>
+      </aside>
+
+      <!-- Center Stage: Interactive iPhone Frame with iOS 27 Liquid Glass -->
+      <div class="phone-stage">
+        <div class="iphone-frame">
+          <div class="hw-btn hw-btn-action"></div>
+          <div class="hw-btn hw-btn-vol-up"></div>
+          <div class="hw-btn hw-btn-vol-dn"></div>
+          <div class="hw-btn hw-btn-power"></div>
+
+          <div class="iphone-bezel">
+            <div class="iphone-screen">
+
+              <!-- Toast inside phone -->
+              <div id="app-toast" class="app-toast">已更新数据</div>
+
+              <!-- iOS 27 Status Bar & Liquid Dynamic Island -->
+              <div class="ios-status-bar tabular-nums">
+                <span>09:41</span>
+                <div class="dynamic-island" onclick="showAppToast('CarPlay Ultra 已连接 · 熄火自动同步最新里程')">
+                  <div class="di-live-indicator">
+                    <span class="di-dot"></span>
+                    <span>OBD 同步</span>
+                  </div>
+                  <div class="di-camera"></div>
+                </div>
+                <div class="status-icons">
+                  <svg width="15" height="11" viewBox="0 0 15 11" fill="currentColor">
+                    <rect x="0" y="7" width="2.5" height="4" rx="1"/>
+                    <rect x="4" y="5" width="2.5" height="6" rx="1"/>
+                    <rect x="8" y="2.5" width="2.5" height="8.5" rx="1"/>
+                    <rect x="12" y="0" width="2.5" height="11" rx="1"/>
+                  </svg>
+                  <span style="font-size:11px;font-weight:700;">5G</span>
+                  <svg width="22" height="11" viewBox="0 0 22 11" fill="none">
+                    <rect x="0.5" y="0.5" width="18" height="10" rx="3" stroke="currentColor" stroke-opacity="0.45"/>
+                    <rect x="2" y="2" width="14" height="7" rx="1.8" fill="currentColor"/>
+                    <path d="M20 3.5V7.5C20.8 7.2 21.3 6.5 21.3 5.5C21.3 4.5 20.8 3.8 20 3.5Z" fill="currentColor" fill-opacity="0.5"/>
+                  </svg>
+                </div>
+              </div>
+
+              <!-- App Scroll Viewport -->
+              <div class="app-scroll-container" id="interactive-viewport-wrapper">
+                <!-- App Top Bar (Liquid Glass Vehicle Switcher Pill + Orb Actions) -->
+                <div class="app-top-bar">
+                  <button class="vehicle-selector-pill" onclick="switchVehicle(state.currentVehicleId === 'bmw330' ? 'nioEt5t' : 'bmw330')" title="点击切换车库车辆">
+                    <span id="top-plate-badge" class="vehicle-plate-mini">沪A·889M3</span>
+                    <span id="top-vehicle-name" class="vehicle-selector-name">BMW 330Li 曜夜</span>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <path d="m6 9 6 6 6-6"/>
+                    </svg>
+                  </button>
+
+                  <div class="top-bar-actions">
+                    <button class="icon-circle-btn" onclick="showAppToast('支持拍照 OCR 识别加油小票、维保结算单与保单')" title="OCR 扫描识别">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
+                        <circle cx="12" cy="13" r="3"/>
+                      </svg>
+                    </button>
+                    <button class="icon-circle-btn" onclick="showAppToast('智能预警：距离四轮动平衡换位还剩 840 km')" title="智能提醒">
+                      <span class="notif-dot"></span>
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/>
+                        <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Dynamic Content Injected by app.js -->
+                <div id="interactive-viewport"></div>
+              </div>
+
+              <!-- iOS 27 Floating Liquid Glass Capsule Tab Bar -->
+              <nav class="ios-tab-bar">
+                <button class="tab-btn active" data-tab="cockpit" onclick="switchTab('cockpit')">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="7" height="9" rx="2.5"/>
+                    <rect x="14" y="3" width="7" height="5" rx="2.5"/>
+                    <rect x="14" y="12" width="7" height="9" rx="2.5"/>
+                    <rect x="3" y="16" width="7" height="5" rx="2.5"/>
+                  </svg>
+                  <span>座舱</span>
+                </button>
+
+                <button class="tab-btn" data-tab="lifecycle" onclick="switchTab('lifecycle')">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 8v4l3 3"/>
+                    <circle cx="12" cy="12" r="9"/>
+                  </svg>
+                  <span>全周期</span>
+                </button>
+
+                <!-- Center Specular Liquid Orb '+' Button -->
+                <div class="tab-add-wrapper">
+                  <button class="tab-add-btn" onclick="openQuickLog()" title="记一笔">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round">
+                      <line x1="12" y1="5" x2="12" y2="19"/>
+                      <line x1="5" y1="12" x2="19" y2="12"/>
+                    </svg>
+                  </button>
+                </div>
+
+                <button class="tab-btn" data-tab="fuel" onclick="switchTab('fuel')">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 22L15 22"/>
+                    <path d="M4 9L14 9"/>
+                    <path d="M14 22V4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v18"/>
+                    <path d="M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2V9.83a2 2 0 0 0-.59-1.42L18 5"/>
+                  </svg>
+                  <span>能耗</span>
+                </button>
+
+                <button class="tab-btn" data-tab="maintenance" onclick="switchTab('maintenance')">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+                  </svg>
+                  <span>维保车险</span>
+                </button>
+              </nav>
+
+              <!-- iOS 27 Spatial Liquid Glass Quick-Log Sheet ("+ 记一笔") -->
+              <div id="quick-log-backdrop" class="ios-sheet-backdrop" onclick="if(event.target===this)closeQuickLog()">
+                <div class="ios-sheet">
+                  <div class="sheet-grabber"></div>
+                  <div class="sheet-header">
+                    <div class="sheet-title-wrap">
+                      <span class="sheet-title">✍️ 记一笔 · 智能车务归档</span>
+                      <span id="ql-sheet-subtitle" class="sheet-subtitle">切换下方分类，自动匹配对应专业表单与计算公式</span>
+                    </div>
+                    <button class="sheet-close" onclick="closeQuickLog()">✕</button>
+                  </div>
+
+                  <!-- 6 Category Selector Pills -->
+                  <div class="category-grid">
+                    <button type="button" class="cat-pill active" data-cat="加油" onclick="selectQuickLogCat('加油')">⛽ 加油/补能</button>
+                    <button type="button" class="cat-pill" data-cat="保养" onclick="selectQuickLogCat('保养')">🔧 定期保养</button>
+                    <button type="button" class="cat-pill" data-cat="维修" onclick="selectQuickLogCat('维修')">🛠️ 故障维修</button>
+                    <button type="button" class="cat-pill" data-cat="保险" onclick="selectQuickLogCat('保险')">🛡️ 续保出险</button>
+                    <button type="button" class="cat-pill" data-cat="上路" onclick="selectQuickLogCat('上路')">🛣️ 停车/车务</button>
+                    <button type="button" class="cat-pill" data-cat="买车" onclick="selectQuickLogCat('买车')">✨ 改装/买车</button>
+                  </div>
+
+                  <!-- Dynamic Category-Specific Form Injected Here -->
+                  <div id="ql-dynamic-form-stage"></div>
+
+                  <!-- Live Formula & Impact Preview Bar -->
+                  <div id="ql-calc-preview" class="calc-preview-bar tabular-nums"></div>
+
+                  <button id="ql-submit-btn" type="button" class="submit-log-btn" onclick="submitQuickLog()">
+                    确认记入账本
+                  </button>
+                </div>
+              </div>
+
+              <div class="ios-home-indicator"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Sidebar: iOS 27 Design System & UX Highlights -->
+      <aside class="spec-sidebar-right">
+        <div class="studio-card">
+          <div class="studio-card-title">
+            <span>iOS 27 Liquid Glass 设计规范</span>
+            <span>Optical Specular</span>
+          </div>
+          <p style="font-size:12px;color:var(--studio-muted);line-height:1.55;">
+            采用 <strong>iOS 27 液态光学玻璃 (Liquid Glass)</strong> 视觉体系：底层环境光流体散景实时折射、卡片顶边与侧边具备 <strong>3D 高光倒角 (Specular Rim Highlight)</strong>，底部导航升级为 <strong>全悬浮超椭圆光学胶囊 (Floating Capsule Bar)</strong>。
+          </p>
+          <div class="swatch-row">
+            <div class="swatch-item">
+              <div class="swatch-circle" style="background:#ff5e2b;"></div>
+              <span>转速熔岩</span>
+            </div>
+            <div class="swatch-item">
+              <div class="swatch-circle" style="background:#34d399;"></div>
+              <span>车况翠绿</span>
+            </div>
+            <div class="swatch-item">
+              <div class="swatch-circle" style="background:#fbbf24;"></div>
+              <span>能耗流金</span>
+            </div>
+            <div class="swatch-item">
+              <div class="swatch-circle" style="background:#38bdf8;"></div>
+              <span>电驱冰蓝</span>
+            </div>
+            <div class="swatch-item">
+              <div class="swatch-circle" style="background:#c084fc;"></div>
+              <span>资产星紫</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="studio-card">
+          <div class="studio-card-title">
+            <span>立即体验「＋」6 种不同表单</span>
+            <span>Try It Now</span>
+          </div>
+          <ul class="feature-checklist">
+            <li>
+              <span>👉</span>
+              <div>点击手机底部中央液态玻璃球 <strong>「＋」</strong> 打开抽屉，然后依次点击 <strong>「🔧 定期保养」「🛠️ 故障维修」「🛡️ 续保出险」「🛣️ 停车/车务」「✨ 改装/买车」</strong>。</div>
+            </li>
+            <li>
+              <span>✨</span>
+              <div>你会看到每个分类都有<strong>完全独立定制的录入项、快捷预设胶囊与底部实时计算公式</strong>（例如在「定期保养」中勾选更换的配件后点击提交，维保页对应配件寿命将立即重置为 100%）。</div>
+            </li>
+          </ul>
+        </div>
+      </aside>
+
+    </section>
+
+    <!-- ==========================================
+         MODE B: ALL-SCREENS ARTBOARD GALLERY (5 Screens Side-by-Side)
+         ========================================== -->
+    <section id="gallery-stage" class="artboard-gallery">
+      <div class="gallery-intro">
+        <div>
+          <h2 style="font-size:18px;font-weight:700;">全量 iOS 27 Liquid Glass 核心画板总览 (5 屏同览)</h2>
+          <p style="font-size:12.5px;color:var(--studio-muted);margin-top:3px;">
+            平铺展示「座舱总览」「买车与TCO全周期」「里程与油耗实验室」「维保健康度」「保险与上路车务」5大液态玻璃视图。
+          </p>
+        </div>
+        <button class="studio-btn" onclick="setStudioMode('interactive')">
+          ← 返回单机交互体验模式
+        </button>
+      </div>
+
+      <div class="gallery-grid">
+        <!-- Artboard 1 -->
+        <div class="artboard-column">
+          <div class="artboard-label">
+            <span class="artboard-num">01</span>
+            <span>爱车中枢 · 液态玻璃总览 (Cockpit Home)</span>
+          </div>
+          <div class="iphone-frame gallery-scale">
+            <div class="iphone-bezel">
+              <div class="iphone-screen">
+                <div class="ios-status-bar tabular-nums">
+                  <span>09:41</span>
+                  <div class="dynamic-island"><div class="di-live-indicator"><span class="di-dot"></span><span>OBD</span></div><div class="di-camera"></div></div>
+                  <span style="font-size:11px;">5G 🔋</span>
+                </div>
+                <div class="app-scroll-container" id="gal-cockpit"></div>
+                <div class="ios-home-indicator"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Artboard 2 -->
+        <div class="artboard-column">
+          <div class="artboard-label">
+            <span class="artboard-num">02</span>
+            <span>买车落户 · TCO与全周期时间轴 (Lifecycle & TCO)</span>
+          </div>
+          <div class="iphone-frame gallery-scale">
+            <div class="iphone-bezel">
+              <div class="iphone-screen">
+                <div class="ios-status-bar tabular-nums">
+                  <span>09:41</span>
+                  <div class="dynamic-island"><div class="di-live-indicator"><span class="di-dot"></span><span>TCO</span></div><div class="di-camera"></div></div>
+                  <span style="font-size:11px;">5G 🔋</span>
+                </div>
+                <div class="app-scroll-container" id="gal-lifecycle"></div>
+                <div class="ios-home-indicator"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Artboard 3 -->
+        <div class="artboard-column">
+          <div class="artboard-label">
+            <span class="artboard-num">03</span>
+            <span>里程与油耗/电耗实验室 (Fuel & Odometer Lab)</span>
+          </div>
+          <div class="iphone-frame gallery-scale">
+            <div class="iphone-bezel">
+              <div class="iphone-screen">
+                <div class="ios-status-bar tabular-nums">
+                  <span>09:41</span>
+                  <div class="dynamic-island"><div class="di-live-indicator"><span class="di-dot"></span><span>能耗</span></div><div class="di-camera"></div></div>
+                  <span style="font-size:11px;">5G 🔋</span>
+                </div>
+                <div class="app-scroll-container" id="gal-fuel"></div>
+                <div class="ios-home-indicator"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Artboard 4 -->
+        <div class="artboard-column">
+          <div class="artboard-label">
+            <span class="artboard-num">04</span>
+            <span>保养健康度与历史维修工单 (Maintenance & Repair)</span>
+          </div>
+          <div class="iphone-frame gallery-scale">
+            <div class="iphone-bezel">
+              <div class="iphone-screen">
+                <div class="ios-status-bar tabular-nums">
+                  <span>09:41</span>
+                  <div class="dynamic-island"><div class="di-live-indicator"><span class="di-dot"></span><span>维保</span></div><div class="di-camera"></div></div>
+                  <span style="font-size:11px;">5G 🔋</span>
+                </div>
+                <div class="app-scroll-container" id="gal-maintenance"></div>
+                <div class="ios-home-indicator"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Artboard 5 -->
+        <div class="artboard-column">
+          <div class="artboard-label">
+            <span class="artboard-num">05</span>
+            <span>保险保单 · 上路合规与数字手套箱 (Insurance & Legal)</span>
+          </div>
+          <div class="iphone-frame gallery-scale">
+            <div class="iphone-bezel">
+              <div class="iphone-screen">
+                <div class="ios-status-bar tabular-nums">
+                  <span>09:41</span>
+                  <div class="dynamic-island"><div class="di-live-indicator"><span class="di-dot"></span><span>车险</span></div><div class="di-camera"></div></div>
+                  <span style="font-size:11px;">5G 🔋</span>
+                </div>
+                <div class="app-scroll-container" id="gal-insurance"></div>
+                <div class="ios-home-indicator"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
