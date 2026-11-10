@@ -200,6 +200,8 @@ struct Vehicle: Identifiable, Codable, Equatable {
     var totalMaintSpend: Double
     var totalInsuranceSpend: Double
     var totalOtherSpend: Double
+    var monthlyBudgetTarget: Double = 2200
+    var currentMonthSpend: Double = 1465
     var purchase: PurchaseInfo
     var healthScore: Int
     var nextAlert: String

@@ -211,6 +211,19 @@ final class VehicleStore: ObservableObject {
         showToast("🎖️ 提车 PDI 6 大核心指标已全部验收合格归档！")
     }
 
+    // MARK: - Iteration 08: Monthly Budget Target & Radar Actions
+    func cycleMonthlyBudgetTarget() {
+        var car = currentVehicle
+        let tiers: [Double] = [1500, 2200, 3000, 4500]
+        if let idx = tiers.firstIndex(of: car.monthlyBudgetTarget) {
+            car.monthlyBudgetTarget = tiers[(idx + 1) % tiers.count]
+        } else {
+            car.monthlyBudgetTarget = 2200
+        }
+        currentVehicle = car
+        showToast("💰 本月养车预算上限已调整为 ¥\(Int(car.monthlyBudgetTarget).formatted())")
+    }
+
     // MARK: - 1. Add Fuel / Charging Log
     func submitFuelLog(odo: Int, cost: Double, price: Double, subType: String, isFullTank: Bool, stationNote: String) {
         var car = currentVehicle
@@ -221,6 +234,7 @@ final class VehicleStore: ObservableObject {
 
         car.odometer = max(car.odometer, odo)
         car.totalFuelSpend += cost.rounded()
+        car.currentMonthSpend += cost.rounded()
         car.avgConsumption = ((car.avgConsumption * 0.8 + cons * 0.2) * 100).rounded() / 100
         car.energyCostPerKm = ((cost / Double(deltaKm)) * 100).rounded() / 100
 

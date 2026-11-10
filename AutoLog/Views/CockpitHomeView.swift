@@ -290,6 +290,9 @@ struct CockpitHomeView: View {
                 .buttonStyle(.plain)
             }
 
+            // 2.5 Iteration 08: Monthly Budget & Spend Radar Card
+            monthlyBudgetRadarCard
+
             // 3. Recent Lifecycle Stream Preview
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
@@ -319,5 +322,54 @@ struct CockpitHomeView: View {
             }
             .liquidGlassCard(cornerRadius: 28)
         }
+    }
+
+    // MARK: - Iteration 08: Monthly Budget & Spend Radar Card
+    private var monthlyBudgetRadarCard: some View {
+        let ratio = car.currentMonthSpend / max(1, car.monthlyBudgetTarget)
+        let pct = Int((ratio * 100).rounded())
+        let stateColor: Color = ratio > 1.0 ? AutoColor.rose : (ratio >= 0.8 ? AutoColor.amber : AutoColor.emerald)
+        let remaining = car.monthlyBudgetTarget - car.currentMonthSpend
+
+        return VStack(alignment: .leading, spacing: 9) {
+            HStack {
+                Text("💰 本月养车预算雷达")
+                    .font(.system(size: 14, weight: .bold))
+                Spacer()
+                Button {
+                    store.cycleMonthlyBudgetTarget()
+                } label: {
+                    Text("预算上限 ¥\(Int(car.monthlyBudgetTarget).formatted()) ⟳")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundStyle(AutoColor.cyan)
+                        .padding(.horizontal, 9)
+                        .padding(.vertical, 4)
+                        .background(AutoColor.cyan.opacity(0.15), in: Capsule())
+                }
+            }
+
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    Capsule()
+                        .fill(Color.primary.opacity(0.13))
+                    Capsule()
+                        .fill(stateColor)
+                        .frame(width: geo.size.width * CGFloat(min(1.0, max(0.05, ratio))))
+                }
+            }
+            .frame(height: 8)
+
+            HStack {
+                Text("本月已支出 ¥\(Int(car.currentMonthSpend).formatted()) (\(pct)%)")
+                    .fontWeight(.bold)
+                Spacer()
+                Text(remaining >= 0 ? "剩余可用 ¥\(Int(remaining).formatted())" : "已超支 ¥\(Int(abs(remaining)).formatted())")
+                    .fontWeight(.bold)
+                    .foregroundStyle(stateColor)
+            }
+            .font(.system(size: 11.5, design: .rounded))
+            .monospacedDigit()
+        }
+        .liquidGlassCard(cornerRadius: 26)
     }
 }
