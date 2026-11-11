@@ -331,6 +331,9 @@ struct MaintenanceAndInsuranceView: View {
             }
             .liquidGlassCard(cornerRadius: 28, tint: AutoColor.emerald)
 
+            // 1.5 Iteration 14: Driver License 12-Point Ring & Violation Tracker
+            licenseScoreAndViolationCard
+
             // 2. Digital Glovebox & On-Road Compliance
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
@@ -417,6 +420,101 @@ struct MaintenanceAndInsuranceView: View {
             }
             .liquidGlassCard(cornerRadius: 28)
         }
+    }
+
+    // MARK: - Iteration 14: Driver License 12-Point Ring & Violation Tracker Card
+    private var licenseScoreAndViolationCard: some View {
+        let tracker = car.licenseTracker
+        let scoreColor: Color = tracker.remainingPoints >= 9 ? AutoColor.emerald : (tracker.remainingPoints >= 6 ? AutoColor.amber : AutoColor.rose)
+
+        return VStack(alignment: .leading, spacing: 11) {
+            HStack {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("🚦 驾驶证 12 分清分周期 & 违章台账")
+                        .font(.system(size: 14.5, weight: .bold))
+                    Text("清分日 \(tracker.clearCycleDate) · 剩余 \(tracker.daysUntilReset) 天重置满分")
+                        .font(.system(size: 11))
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+                Button {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                        store.applyStudyPointRecovery()
+                    }
+                } label: {
+                    Text("🎓 学法减分 +1")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundStyle(AutoColor.cyan)
+                        .padding(.horizontal, 9)
+                        .padding(.vertical, 4.5)
+                        .background(AutoColor.cyan.opacity(0.15), in: Capsule())
+                }
+            }
+
+            // 12-Segment Liquid Glass Energy Gauge
+            VStack(alignment: .leading, spacing: 6) {
+                HStack(spacing: 4) {
+                    ForEach(1...12, id: \.self) { pt in
+                        RoundedRectangle(cornerRadius: 4, style: .continuous)
+                            .fill(pt <= tracker.remainingPoints ? scoreColor : Color.primary.opacity(0.10))
+                            .frame(height: 12)
+                    }
+                }
+                HStack {
+                    Text("当前可用 \(tracker.remainingPoints) / 12 分")
+                        .font(.system(size: 12, weight: .heavy, design: .rounded))
+                        .foregroundStyle(scoreColor)
+                    Spacer()
+                    Text("本周期已学法抵扣 \(tracker.studyRecoveredPoints)/6 分")
+                        .font(.system(size: 10.5, weight: .medium))
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .padding(10)
+            .background(Color.primary.opacity(0.045), in: RoundedRectangle(cornerRadius: 15, style: .continuous))
+
+            // Violation Ledger Rows
+            VStack(spacing: 7) {
+                ForEach(tracker.records) { rec in
+                    HStack(spacing: 8) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            HStack(spacing: 5) {
+                                Text(rec.date)
+                                    .font(.system(size: 10.5, weight: .bold, design: .monospaced))
+                                    .foregroundStyle(.secondary)
+                                Text(rec.reason)
+                                    .font(.system(size: 12, weight: .bold))
+                                    .lineLimit(1)
+                            }
+                            Text("记 \(rec.points) 分 · 罚款 ¥\(Int(rec.fine))")
+                                .font(.system(size: 10.5, weight: .semibold))
+                                .foregroundStyle(rec.isResolved ? Color.secondary : AutoColor.rose)
+                        }
+                        Spacer()
+                        if rec.isResolved {
+                            StatusChip(text: "已缴清", color: AutoColor.emerald)
+                        } else {
+                            Button {
+                                withAnimation(.spring(response: 0.3, dampingFraction: 0.82)) {
+                                    store.resolveViolation(id: rec.id)
+                                }
+                            } label: {
+                                Text("一键缴款")
+                                    .font(.system(size: 11, weight: .bold))
+                                    .foregroundStyle(.white)
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 5)
+                                    .background(AutoColor.rose, in: Capsule())
+                            }
+                        }
+                    }
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 8)
+                    .background(Color.primary.opacity(0.045), in: RoundedRectangle(cornerRadius: 13, style: .continuous))
+                }
+            }
+        }
+        .liquidGlassCard(cornerRadius: 28, tint: scoreColor)
     }
 
     private func insBox(label: String, value: String, color: Color) -> some View {

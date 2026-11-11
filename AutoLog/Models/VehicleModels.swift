@@ -213,6 +213,7 @@ struct Vehicle: Identifiable, Codable, Equatable {
     var monthlyBudgetTarget: Double = 2200
     var currentMonthSpend: Double = 1465
     var parkingSession: ParkingSession = ParkingSession()
+    var licenseTracker: LicenseScoreTracker = LicenseScoreTracker()
     var purchase: PurchaseInfo
     var healthScore: Int
     var nextAlert: String
@@ -308,6 +309,30 @@ struct ParkingSession: Codable, Equatable {
         let h = elapsedMinutes / 60
         let m = elapsedMinutes % 60
         return h > 0 ? "\(h)小时 \(m)分" : "\(m)分钟"
+    }
+}
+
+struct TrafficViolationItem: Identifiable, Codable, Equatable {
+    var id: UUID = UUID()
+    var date: String
+    var reason: String
+    var points: Int
+    var fine: Double
+    var isResolved: Bool
+}
+
+struct LicenseScoreTracker: Codable, Equatable {
+    var remainingPoints: Int = 9
+    var clearCycleDate: String = "2027-03-18"
+    var daysUntilReset: Int = 127
+    var studyRecoveredPoints: Int = 0
+    var records: [TrafficViolationItem] = [
+        TrafficViolationItem(date: "10-28", reason: "延安高架实线变道抓拍", points: 3, fine: 200, isResolved: false),
+        TrafficViolationItem(date: "05-14", reason: "静安支路临时违停警告单", points: 0, fine: 0, isResolved: true)
+    ]
+
+    var pendingCount: Int {
+        records.filter { !$0.isResolved }.count
     }
 }
 

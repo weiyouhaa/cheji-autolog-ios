@@ -288,6 +288,55 @@ final class VehicleStore: ObservableObject {
         showToast(fee > 0 ? "🅿️ 已离场并自动记入停车费 ¥\(Int(fee))！" : "🅿️ 免费时段内离场，无需扣费！")
     }
 
+    // MARK: - Iteration 14: Driver License 12-Point Ring & Violation Actions
+    func resolveViolation(id: UUID) {
+        var car = currentVehicle
+        guard let idx = car.licenseTracker.records.firstIndex(where: { $0.id == id }),
+              !car.licenseTracker.records[idx].isResolved else { return }
+
+        car.licenseTracker.records[idx].isResolved = true
+        let item = car.licenseTracker.records[idx]
+        let todayFull = Self.fullDateString()
+
+        if item.fine > 0 {
+            car.totalOtherSpend += item.fine
+            car.currentMonthSpend += item.fine
+            let event = TimelineEvent(
+                date: todayFull,
+                cat: "上路",
+                color: "rose",
+                title: "违章缴款处理 · \(item.reason)",
+                cost: String(format: "-¥%.0f", item.fine),
+                odo: "\(car.odometer.formatted()) km",
+                tags: ["记\(item.points)分", "12123线上缴清"]
+            )
+            car.timeline.insert(event, at: 0)
+        }
+
+        let pending = car.licenseTracker.pendingCount
+        car.insurance.compliance.violations = "\(pending) 条未处理 · 驾驶证剩余 \(car.licenseTracker.remainingPoints) 分"
+        currentVehicle = car
+        showToast("✅ 已结清违章罚款 ¥\(Int(item.fine)) 并归档账单！")
+    }
+
+    func applyStudyPointRecovery() {
+        var car = currentVehicle
+        guard car.licenseTracker.remainingPoints < 12 else {
+            showToast("🎖️ 当前驾照已是 12 分满分状态，无需减分！")
+            return
+        }
+        guard car.licenseTracker.studyRecoveredPoints < 6 else {
+            showToast("⚠️ 本记分周期学法减分已达 6 分上限")
+            return
+        }
+        car.licenseTracker.remainingPoints = min(12, car.licenseTracker.remainingPoints + 1)
+        car.licenseTracker.studyRecoveredPoints += 1
+        let pending = car.licenseTracker.pendingCount
+        car.insurance.compliance.violations = "\(pending) 条未处理 · 驾驶证剩余 \(car.licenseTracker.remainingPoints) 分"
+        currentVehicle = car
+        showToast("🎓 12123 学法减分 +1分成功！当前可用 \(car.licenseTracker.remainingPoints)/12 分")
+    }
+
     // MARK: - 1. Add Fuel / Charging Log
     func submitFuelLog(odo: Int, cost: Double, price: Double, subType: String, isFullTank: Bool, stationNote: String) {
         var car = currentVehicle
@@ -445,8 +494,14 @@ final class VehicleStore: ObservableObject {
         let todayFull = Self.fullDateString()
         car.totalOtherSpend += cost.rounded()
 
-        if expenseType.contains("违章") && odoOrPoints > 0 {
-            car.insurance.compliance.violations = "已处理 · 记 \(odoOrPoints) 分"
+        if expenseType.contains("违章") {
+            let pts = max(0, min(12, odoOrPoints))
+            car.licenseTracker.remainingPoints = max(0, car.licenseTracker.remainingPoints - pts)
+            car.licenseTracker.records.insert(
+                TrafficViolationItem(date: Self.shortDateString(), reason: detailNote.isEmpty ? "交通违章处理" : detailNote, points: pts, fine: cost, isResolved: true),
+                at: 0
+            )
+            car.insurance.compliance.violations = "\(car.licenseTracker.pendingCount) 条未处理 · 驾驶证剩余 \(car.licenseTracker.remainingPoints) 分"
         }
 
         let event = TimelineEvent(
