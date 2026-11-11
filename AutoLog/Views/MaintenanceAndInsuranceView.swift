@@ -7,6 +7,7 @@ struct MaintenanceAndInsuranceView: View {
     @State private var selectedTireForEdit: TireWheelStatus? = nil
     @State private var showAccidentSOSSheet = false
     @State private var selectedSeason: String = "❄️ 冬季"
+    @State private var isVaultPrivacyMasked: Bool = true
 
     var car: Vehicle { store.currentVehicle }
     var isInsuranceMode: Bool { store.activeTab == .insurance }
@@ -334,6 +335,9 @@ struct MaintenanceAndInsuranceView: View {
             // 1.5 Iteration 14: Driver License 12-Point Ring & Violation Tracker
             licenseScoreAndViolationCard
 
+            // 1.8 Iteration 15: Digital Document Vault & Privacy Mask Shield
+            digitalDocumentVaultCard
+
             // 2. Digital Glovebox & On-Road Compliance
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
@@ -515,6 +519,78 @@ struct MaintenanceAndInsuranceView: View {
             }
         }
         .liquidGlassCard(cornerRadius: 28, tint: scoreColor)
+    }
+
+    // MARK: - Iteration 15: Digital Document Vault & Privacy Mask Card
+    private var digitalDocumentVaultCard: some View {
+        let docs = car.digitalDocuments
+        return VStack(alignment: .leading, spacing: 11) {
+            HStack {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("🔐 数字证件保险箱")
+                        .font(.system(size: 14.5, weight: .bold))
+                    Text(isVaultPrivacyMasked ? "已开启防窥脱敏护盾 · 截图发车友群不泄密" : "明文展示中 · 点击任意卡即可复制完整号码")
+                        .font(.system(size: 11))
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+                Button {
+                    withAnimation(.spring(response: 0.25, dampingFraction: 0.82)) {
+                        isVaultPrivacyMasked.toggle()
+                    }
+                } label: {
+                    Text(isVaultPrivacyMasked ? "🙈 脱敏中" : "👁️ 显明文")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundStyle(isVaultPrivacyMasked ? AutoColor.purple : AutoColor.amber)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background((isVaultPrivacyMasked ? AutoColor.purple : AutoColor.amber).opacity(0.15), in: Capsule())
+                }
+            }
+
+            LazyVGrid(columns: [GridItem(.flexible(), spacing: 8), GridItem(.flexible(), spacing: 8)], spacing: 8) {
+                ForEach(docs) { doc in
+                    Button {
+                        UIPasteboard.general.string = doc.rawCode
+                        store.showToast("📋 已复制「\(doc.title)」完整编号至剪贴板")
+                    } label: {
+                        VStack(alignment: .leading, spacing: 5) {
+                            HStack {
+                                Text(doc.icon)
+                                    .font(.system(size: 14))
+                                Spacer()
+                                Text("复制")
+                                    .font(.system(size: 9.5, weight: .bold))
+                                    .foregroundStyle(AutoColor.cyan)
+                            }
+                            Text(doc.title)
+                                .font(.system(size: 11, weight: .bold))
+                                .lineLimit(1)
+                            Text(isVaultPrivacyMasked ? doc.maskedCode : doc.rawCode)
+                                .font(.system(size: 10.5, weight: .bold, design: .monospaced))
+                                .foregroundStyle(.primary)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.72)
+                            Text(doc.validityNote)
+                                .font(.system(size: 9.5, weight: .semibold))
+                                .foregroundStyle(AutoColor.emerald)
+                        }
+                        .padding(10)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(
+                            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                .fill(Color.primary.opacity(0.05))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                        .strokeBorder(Color.white.opacity(0.14), lineWidth: 1)
+                                )
+                        )
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
+        .liquidGlassCard(cornerRadius: 28, tint: AutoColor.purple)
     }
 
     private func insBox(label: String, value: String, color: Color) -> some View {

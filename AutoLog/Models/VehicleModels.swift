@@ -336,7 +336,38 @@ struct LicenseScoreTracker: Codable, Equatable {
     }
 }
 
+struct DigitalDocumentItem: Identifiable, Equatable {
+    var id: String
+    var icon: String
+    var title: String
+    var rawCode: String
+    var maskedCode: String
+    var validityNote: String
+}
+
 extension Vehicle {
+    var digitalDocuments: [DigitalDocumentItem] {
+        let maskedVin: String = {
+            guard vin.count >= 8 else { return "••••••••" }
+            return "\(vin.prefix(5))••••••••\(vin.suffix(3))"
+        }()
+        let maskedEngine: String = {
+            guard engineNo.count >= 6 else { return "••••••" }
+            return "\(engineNo.prefix(4))••••\(engineNo.suffix(2))"
+        }()
+        let rawPolicy = insurance.policyNo
+        let maskedPolicy: String = {
+            guard rawPolicy.count >= 10 else { return "••••••••" }
+            return "\(rawPolicy.prefix(6))••••••\(rawPolicy.suffix(4))"
+        }()
+        return [
+            DigitalDocumentItem(id: "doc_reg", icon: "📘", title: "机动车行驶证 (车架号)", rawCode: vin, maskedCode: maskedVin, validityNote: "6年免检有效"),
+            DigitalDocumentItem(id: "doc_green", icon: "📗", title: "登记证书大绿本 (发动机)", rawCode: engineNo, maskedCode: maskedEngine, validityNote: "个人名下未抵押"),
+            DigitalDocumentItem(id: "doc_ins", icon: "🛡️", title: "交强与商业电子保单", rawCode: rawPolicy, maskedCode: maskedPolicy, validityNote: "剩 \(insurance.daysRemaining) 天到期"),
+            DigitalDocumentItem(id: "doc_dl", icon: "🪪", title: "电子驾驶证 (准驾 C1)", rawCode: "31011519940818291X", maskedCode: "310115••••••••291X", validityNote: "长期有效 · \(licenseTracker.remainingPoints)分")
+        ]
+    }
+
     var stationBrandLeaderboard: [StationBrandSummary] {
         guard !fuelLogs.isEmpty else { return [] }
         var buckets: [String: [FuelLog]] = [:]
