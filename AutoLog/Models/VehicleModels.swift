@@ -212,6 +212,7 @@ struct Vehicle: Identifiable, Codable, Equatable {
     var totalOtherSpend: Double
     var monthlyBudgetTarget: Double = 2200
     var currentMonthSpend: Double = 1465
+    var parkingSession: ParkingSession = ParkingSession()
     var purchase: PurchaseInfo
     var healthScore: Int
     var nextAlert: String
@@ -286,6 +287,28 @@ struct StationBrandSummary: Identifiable, Equatable {
     var count: Int
     var avgPrice: Double
     var avgConsumption: Double
+}
+
+struct ParkingSession: Codable, Equatable {
+    var isActive: Bool = true
+    var lotName: String = "国金中心 IFC 地下车库"
+    var floor: String = "B2"
+    var zoneSpot: String = "C区 · 086号"
+    var hourlyRate: Double = 15.0
+    var freeMinutes: Int = 15
+    var elapsedMinutes: Int = 95
+
+    var estimatedFee: Double {
+        guard isActive, elapsedMinutes > freeMinutes else { return 0 }
+        let billedHours = ceil(Double(elapsedMinutes) / 60.0)
+        return billedHours * hourlyRate
+    }
+
+    var formattedDuration: String {
+        let h = elapsedMinutes / 60
+        let m = elapsedMinutes % 60
+        return h > 0 ? "\(h)小时 \(m)分" : "\(m)分钟"
+    }
 }
 
 extension Vehicle {

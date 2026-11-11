@@ -233,6 +233,61 @@ final class VehicleStore: ObservableObject {
         showToast("✅ 已完成「\(seasonName)」专项养护自检，车况评分提升至 \(car.healthScore) 分！")
     }
 
+    // MARK: - Iteration 13: Smart Parking Locator & Meter Actions
+    func selectParkingFloor(_ floor: String) {
+        var car = currentVehicle
+        car.parkingSession.isActive = true
+        car.parkingSession.floor = floor
+        currentVehicle = car
+        showToast("🅿️ 已锁定停放楼层：\(floor) · \(car.parkingSession.zoneSpot)")
+    }
+
+    func updateParkingSpot(lotName: String, floor: String, zoneSpot: String, hourlyRate: Double) {
+        var car = currentVehicle
+        car.parkingSession.isActive = true
+        car.parkingSession.lotName = lotName.isEmpty ? "商业综合体地库" : lotName
+        car.parkingSession.floor = floor
+        car.parkingSession.zoneSpot = zoneSpot.isEmpty ? "A区 · 018号" : zoneSpot
+        car.parkingSession.hourlyRate = max(0, hourlyRate)
+        car.parkingSession.elapsedMinutes = 10
+        currentVehicle = car
+        showToast("📍 寻车记忆牌已更新：\(floor) \(car.parkingSession.zoneSpot)")
+    }
+
+    func addParkingDuration(minutes: Int) {
+        var car = currentVehicle
+        car.parkingSession.isActive = true
+        car.parkingSession.elapsedMinutes += minutes
+        currentVehicle = car
+    }
+
+    func settleParkingAndLogExpense() {
+        var car = currentVehicle
+        let session = car.parkingSession
+        let fee = session.estimatedFee
+        let todayFull = Self.fullDateString()
+
+        if fee > 0 {
+            car.totalOtherSpend += fee
+            car.currentMonthSpend += fee
+            let event = TimelineEvent(
+                date: todayFull,
+                cat: "上路",
+                color: "purple",
+                title: "停车离场 · \(session.lotName)",
+                cost: String(format: "-¥%.0f", fee),
+                odo: "\(car.odometer.formatted()) km",
+                tags: ["\(session.floor) \(session.zoneSpot)", "停放 \(session.formattedDuration)", "自动计费入账"]
+            )
+            car.timeline.insert(event, at: 0)
+        }
+
+        car.parkingSession.isActive = false
+        car.parkingSession.elapsedMinutes = 0
+        currentVehicle = car
+        showToast(fee > 0 ? "🅿️ 已离场并自动记入停车费 ¥\(Int(fee))！" : "🅿️ 免费时段内离场，无需扣费！")
+    }
+
     // MARK: - 1. Add Fuel / Charging Log
     func submitFuelLog(odo: Int, cost: Double, price: Double, subType: String, isFullTank: Bool, stationNote: String) {
         var car = currentVehicle

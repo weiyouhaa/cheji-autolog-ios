@@ -2,6 +2,7 @@ import SwiftUI
 
 struct CockpitHomeView: View {
     @EnvironmentObject var store: VehicleStore
+    @State private var showParkingEditSheet = false
 
     var car: Vehicle { store.currentVehicle }
 
@@ -293,6 +294,9 @@ struct CockpitHomeView: View {
             // 2.5 Iteration 08: Monthly Budget & Spend Radar Card
             monthlyBudgetRadarCard
 
+            // 2.6 Iteration 13: Smart Parking Locator & Meter Timer Card
+            smartParkingLocatorCard
+
             // 3. Recent Lifecycle Stream Preview
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
@@ -381,5 +385,226 @@ struct CockpitHomeView: View {
             .monospacedDigit()
         }
         .liquidGlassCard(cornerRadius: 26)
+    }
+
+    // MARK: - Iteration 13: Smart Parking Locator & Meter Timer Card
+    private var smartParkingLocatorCard: some View {
+        let session = car.parkingSession
+        let floors = ["B1", "B2", "B3", "地面"]
+
+        return VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                HStack(spacing: 6) {
+                    Text("🅿️ 智慧寻车记忆牌")
+                        .font(.system(size: 14, weight: .bold))
+                    if session.isActive {
+                        StatusChip(text: "停放中", color: AutoColor.cyan, showDot: true)
+                    } else {
+                        StatusChip(text: "行驶/未驻车", color: .secondary)
+                    }
+                }
+                Spacer()
+                Button {
+                    showParkingEditSheet = true
+                } label: {
+                    Text("✎ 改车位")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundStyle(AutoColor.accentOrange)
+                        .padding(.horizontal, 9)
+                        .padding(.vertical, 4)
+                        .background(AutoColor.accentOrange.opacity(0.14), in: Capsule())
+                }
+            }
+
+            if session.isActive {
+                HStack(spacing: 10) {
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(session.lotName)
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundStyle(.secondary)
+                        HStack(alignment: .firstTextBaseline, spacing: 6) {
+                            Text(session.floor)
+                                .font(.system(size: 22, weight: .heavy, design: .rounded))
+                                .foregroundStyle(AutoColor.cyan)
+                            Text(session.zoneSpot)
+                                .font(.system(size: 17, weight: .heavy, design: .rounded))
+                        }
+                    }
+                    Spacer()
+                    VStack(alignment: .trailing, spacing: 3) {
+                        Text("已停 \(session.formattedDuration)")
+                            .font(.system(size: 11, weight: .bold, design: .rounded))
+                            .foregroundStyle(.secondary)
+                        Text(String(format: "预估 ¥%.0f", session.estimatedFee))
+                            .font(.system(size: 18, weight: .heavy, design: .rounded))
+                            .foregroundStyle(AutoColor.amber)
+                            .monospacedDigit()
+                    }
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 10)
+                .background(Color.primary.opacity(0.05), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+
+                HStack(spacing: 6) {
+                    ForEach(floors, id: \.self) { fl in
+                        Button {
+                            withAnimation(.spring(response: 0.25, dampingFraction: 0.8)) {
+                                store.selectParkingFloor(fl)
+                            }
+                        } label: {
+                            Text(fl)
+                                .font(.system(size: 11, weight: .bold, design: .rounded))
+                                .foregroundStyle(session.floor == fl ? .white : .secondary)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 5)
+                                .background(
+                                    Capsule()
+                                        .fill(session.floor == fl ? AutoColor.cyan : Color.primary.opacity(0.07))
+                                )
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    Spacer()
+                    Button {
+                        store.addParkingDuration(minutes: 30)
+                    } label: {
+                        Text("+30m")
+                            .font(.system(size: 11, weight: .bold, design: .rounded))
+                            .foregroundStyle(AutoColor.amber)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 5)
+                            .background(AutoColor.amber.opacity(0.15), in: Capsule())
+                    }
+                    Button {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.82)) {
+                            store.settleParkingAndLogExpense()
+                        }
+                    } label: {
+                        Text("离场记账")
+                            .font(.system(size: 11, weight: .bold))
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 5)
+                            .background(AutoColor.emerald, in: Capsule())
+                    }
+                }
+            } else {
+                HStack {
+                    Text("进入商场或陌生地下车库？一键锁定楼层与车位柱号，离场自动核算停车费入账。")
+                        .font(.system(size: 11.5))
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    Button {
+                        store.updateParkingSpot(lotName: session.lotName, floor: "B2", zoneSpot: "C区 · 086号", hourlyRate: session.hourlyRate)
+                    } label: {
+                        Text("📍 一键驻车打卡")
+                            .font(.system(size: 11.5, weight: .bold))
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 11)
+                            .padding(.vertical, 7)
+                            .background(AutoColor.cyan, in: Capsule())
+                    }
+                }
+            }
+        }
+        .liquidGlassCard(cornerRadius: 26, tint: AutoColor.cyan)
+        .sheet(isPresented: $showParkingEditSheet) {
+            ParkingSpotEditSheet(initialSession: session)
+                .environmentObject(store)
+                .presentationDetents([.height(340)])
+                .presentationCornerRadius(32)
+        }
+    }
+}
+
+struct ParkingSpotEditSheet: View {
+    @EnvironmentObject var store: VehicleStore
+    @Environment(\.dismiss) private var dismiss
+
+    @State private var lotName: String
+    @State private var floor: String
+    @State private var zoneSpot: String
+    @State private var hourlyRateText: String
+
+    init(initialSession: ParkingSession) {
+        _lotName = State(initialValue: initialSession.lotName)
+        _floor = State(initialValue: initialSession.floor)
+        _zoneSpot = State(initialValue: initialSession.zoneSpot)
+        _hourlyRateText = State(initialValue: String(format: "%.0f", initialSession.hourlyRate))
+    }
+
+    var body: some View {
+        NavigationStack {
+            VStack(alignment: .leading, spacing: 14) {
+                VStack(alignment: .leading, spacing: 5) {
+                    Text("停车场 / 商场名称")
+                        .font(.system(size: 11.5, weight: .semibold))
+                        .foregroundStyle(.secondary)
+                    TextField("如：万象城地库", text: $lotName)
+                        .font(.system(size: 14, weight: .semibold))
+                        .padding(11)
+                        .background(Color.primary.opacity(0.06), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                }
+
+                HStack(spacing: 10) {
+                    VStack(alignment: .leading, spacing: 5) {
+                        Text("楼层")
+                            .font(.system(size: 11.5, weight: .semibold))
+                            .foregroundStyle(.secondary)
+                        TextField("B2", text: $floor)
+                            .font(.system(size: 14, weight: .bold))
+                            .padding(11)
+                            .background(Color.primary.opacity(0.06), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    }
+                    .frame(width: 90)
+
+                    VStack(alignment: .leading, spacing: 5) {
+                        Text("区域与车位编号")
+                            .font(.system(size: 11.5, weight: .semibold))
+                            .foregroundStyle(.secondary)
+                        TextField("C区 · 086号", text: $zoneSpot)
+                            .font(.system(size: 14, weight: .bold))
+                            .padding(11)
+                            .background(Color.primary.opacity(0.06), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    }
+
+                    VStack(alignment: .leading, spacing: 5) {
+                        Text("时租(¥/h)")
+                            .font(.system(size: 11.5, weight: .semibold))
+                            .foregroundStyle(.secondary)
+                        TextField("15", text: $hourlyRateText)
+                            .keyboardType(.decimalPad)
+                            .font(.system(size: 14, weight: .bold))
+                            .padding(11)
+                            .background(Color.primary.opacity(0.06), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    }
+                    .frame(width: 82)
+                }
+
+                Button {
+                    let rate = Double(hourlyRateText) ?? 15
+                    store.updateParkingSpot(lotName: lotName, floor: floor, zoneSpot: zoneSpot, hourlyRate: rate)
+                    dismiss()
+                } label: {
+                    Text("保存寻车位置并开始计费")
+                        .font(.system(size: 14.5, weight: .bold))
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 13)
+                        .background(AutoColor.cyan, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+                }
+                .padding(.top, 4)
+
+                Spacer()
+            }
+            .padding(18)
+            .navigationTitle("🅿️ 登记停车位置")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("关闭") { dismiss() }
+                }
+            }
+        }
     }
 }
