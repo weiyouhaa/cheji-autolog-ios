@@ -5,6 +5,7 @@ struct LifecycleTCOView: View {
     @State private var showEarlyPayoffAlert = false
     @State private var selectedProjectionYear: Int = 3
     @State private var showPDIChecklistSheet = false
+    @State private var searchQuery: String = ""
 
     var car: Vehicle { store.currentVehicle }
 
@@ -12,15 +13,27 @@ struct LifecycleTCOView: View {
         ("all", "全部"),
         ("买车", "买车"),
         ("上路", "上路"),
+        ("加油", "补能"),
         ("保养", "维保"),
         ("保险", "保险")
     ]
 
     var filteredTimeline: [TimelineEvent] {
-        if store.lifecycleFilter == "all" {
-            return car.timeline
+        car.timeline.filter { ev in
+            let catMatch: Bool
+            if store.lifecycleFilter == "all" {
+                catMatch = true
+            } else if store.lifecycleFilter == "保养" {
+                catMatch = (ev.cat == "保养" || ev.cat == "维修")
+            } else {
+                catMatch = (ev.cat == store.lifecycleFilter)
+            }
+            return catMatch && ev.matches(query: searchQuery)
         }
-        return car.timeline.filter { $0.cat == store.lifecycleFilter }
+    }
+
+    var filteredTotalAmount: Double {
+        filteredTimeline.reduce(0) { $0 + $1.parsedNumericCost }
     }
 
     var body: some View {
@@ -130,10 +143,75 @@ struct LifecycleTCOView: View {
             }
             .liquidGlassCard(cornerRadius: 28)
 
-            // 3. Full Lifecycle Timeline
-            VStack(alignment: .leading, spacing: 12) {
-                Text("🧭 从买车到上路 · 全生命周期时间轴")
-                    .font(.system(size: 14.5, weight: .bold))
+            // 3. Full Lifecycle Timeline + Iteration 16 Spotlight Search & Sum Aggregator
+            VStack(alignment: .leading, spacing: 11) {
+                HStack {
+                    Text("🧭 从买车到上路 · 全生命周期时间轴")
+                        .font(.system(size: 14.5, weight: .bold))
+                    Spacer()
+                    Text("共 \(filteredTimeline.count) 笔 · ¥\(Int(filteredTotalAmount).formatted())")
+                        .font(.system(size: 11, weight: .heavy, design: .rounded))
+                        .foregroundStyle(AutoColor.accentOrange)
+                        .padding(.horizontal, 9)
+                        .padding(.vertical, 4)
+                        .background(AutoColor.accentOrange.opacity(0.14), in: Capsule())
+                        .monospacedDigit()
+                }
+
+                // Iteration 16: Liquid Glass Spotlight Search Input + Quick Hot Tags
+                VStack(alignment: .leading, spacing: 7) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "magnifyingglass")
+                            .font(.system(size: 13, weight: .bold))
+                            .foregroundStyle(.secondary)
+                        TextField("搜索账单明细 (如：2026、壳牌、保养、车衣)...", text: $searchQuery)
+                            .font(.system(size: 12.5, weight: .medium))
+                        if !searchQuery.isEmpty {
+                            Button {
+                                searchQuery = ""
+                            } label: {
+                                Image(systemName: "xmark.circle.fill")
+                                    .font(.system(size: 14))
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8.5)
+                    .background(
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .fill(Color.primary.opacity(0.055))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                    .strokeBorder(Color.white.opacity(0.15), lineWidth: 1)
+                            )
+                    )
+
+                    let hotTags = car.isEV ? ["2026", "换电", "健检", "绿牌"] : ["2026", "壳牌", "大保养", "车衣"]
+                    HStack(spacing: 6) {
+                        Text("热搜:")
+                            .font(.system(size: 10.5, weight: .semibold))
+                            .foregroundStyle(.secondary)
+                        ForEach(hotTags, id: \.self) { tag in
+                            Button {
+                                withAnimation(.spring(response: 0.25, dampingFraction: 0.8)) {
+                                    searchQuery = (searchQuery == tag) ? "" : tag
+                                }
+                            } label: {
+                                Text(tag)
+                                    .font(.system(size: 10.5, weight: .bold))
+                                    .foregroundStyle(searchQuery == tag ? .white : .secondary)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 3.5)
+                                    .background(
+                                        Capsule()
+                                            .fill(searchQuery == tag ? AutoColor.accentOrange : Color.primary.opacity(0.06))
+                                    )
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                }
 
                 // Liquid Glass Segmented Filter
                 HStack(spacing: 4) {
@@ -164,9 +242,25 @@ struct LifecycleTCOView: View {
                         .overlay(Capsule().strokeBorder(Color.white.opacity(0.15), lineWidth: 1))
                 )
 
-                VStack(spacing: 0) {
-                    ForEach(Array(filteredTimeline.enumerated()), id: \.element.id) { idx, event in
-                        TimelineNodeView(event: event, isLast: idx == filteredTimeline.count - 1)
+                if filteredTimeline.isEmpty {
+                    VStack(spacing: 8) {
+                        Text("🔍 未找到与「\(searchQuery)」匹配的账单")
+                            .font(.system(size: 12.5, weight: .semibold))
+                            .foregroundStyle(.secondary)
+                        Button("重置筛选与搜索") {
+                            searchQuery = ""
+                            store.lifecycleFilter = "all"
+                        }
+                        .font(.system(size: 11.5, weight: .bold))
+                        .foregroundStyle(AutoColor.accentOrange)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 18)
+                } else {
+                    VStack(spacing: 0) {
+                        ForEach(Array(filteredTimeline.enumerated()), id: \.element.id) { idx, event in
+                            TimelineNodeView(event: event, isLast: idx == filteredTimeline.count - 1)
+                        }
                     }
                 }
             }

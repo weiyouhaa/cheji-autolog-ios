@@ -187,6 +187,26 @@ struct TimelineEvent: Identifiable, Codable, Equatable {
     var cost: String
     var odo: String
     var tags: [String]
+
+    var parsedNumericCost: Double {
+        let cleaned = cost
+            .replacingOccurrences(of: "-", with: "")
+            .replacingOccurrences(of: "+", with: "")
+            .replacingOccurrences(of: "¥", with: "")
+            .replacingOccurrences(of: ",", with: "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        return Double(cleaned) ?? 0
+    }
+
+    func matches(query: String) -> Bool {
+        let q = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !q.isEmpty else { return true }
+        if title.localizedCaseInsensitiveContains(q) { return true }
+        if cat.localizedCaseInsensitiveContains(q) { return true }
+        if date.localizedCaseInsensitiveContains(q) { return true }
+        if odo.localizedCaseInsensitiveContains(q) { return true }
+        return tags.contains { $0.localizedCaseInsensitiveContains(q) }
+    }
 }
 
 struct Vehicle: Identifiable, Codable, Equatable {
