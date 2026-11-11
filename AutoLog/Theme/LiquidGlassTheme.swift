@@ -1,4 +1,36 @@
 import SwiftUI
+import UIKit
+
+// MARK: - Iteration 20: Global Taptic Haptic Engine
+@MainActor
+enum AutoHapticEngine {
+    static var isEnabled: Bool {
+        if UserDefaults.standard.object(forKey: "autolog_haptics_enabled") == nil {
+            return true
+        }
+        return UserDefaults.standard.bool(forKey: "autolog_haptics_enabled")
+    }
+
+    static func selection() {
+        guard isEnabled else { return }
+        UISelectionFeedbackGenerator().selectionChanged()
+    }
+
+    static func impact(_ style: UIImpactFeedbackGenerator.FeedbackStyle = .medium) {
+        guard isEnabled else { return }
+        UIImpactFeedbackGenerator(style: style).impactOccurred()
+    }
+
+    static func success() {
+        guard isEnabled else { return }
+        UINotificationFeedbackGenerator().notificationOccurred(.success)
+    }
+
+    static func warning() {
+        guard isEnabled else { return }
+        UINotificationFeedbackGenerator().notificationOccurred(.warning)
+    }
+}
 
 enum AutoColor {
     static let accentOrange = Color(red: 1.0, green: 0.369, blue: 0.169) // #FF5E2B

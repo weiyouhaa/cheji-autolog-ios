@@ -27,6 +27,10 @@ final class VehicleStore: ObservableObject {
     @Published var compareSheetPresented: Bool = false
     @Published var exportSheetPresented: Bool = false
     @Published var widgetGalleryPresented: Bool = false
+    @Published var evolutionHubPresented: Bool = false
+    @Published var hapticsEnabled: Bool = (UserDefaults.standard.object(forKey: "autolog_haptics_enabled") as? Bool ?? true) {
+        didSet { UserDefaults.standard.set(hapticsEnabled, forKey: "autolog_haptics_enabled") }
+    }
     @Published var lifecycleFilter: String = "all"
     @Published var toastMessage: String? = nil
 
@@ -49,6 +53,7 @@ final class VehicleStore: ObservableObject {
 
     func switchVehicle(_ id: String) {
         guard vehicles.contains(where: { $0.id == id }) else { return }
+        AutoHapticEngine.impact(.medium)
         withAnimation(.spring(response: 0.35, dampingFraction: 0.82)) {
             currentVehicleId = id
         }
@@ -64,11 +69,17 @@ final class VehicleStore: ObservableObject {
     }
 
     func openQuickLog(_ category: QuickLogCategory = .fuel) {
+        AutoHapticEngine.impact(.rigid)
         selectedQuickLogCategory = category
         quickLogPresented = true
     }
 
     func showToast(_ message: String) {
+        if message.contains("⚠️") {
+            AutoHapticEngine.warning()
+        } else {
+            AutoHapticEngine.success()
+        }
         withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
             toastMessage = message
         }

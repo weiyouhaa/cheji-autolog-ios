@@ -374,6 +374,14 @@ struct DriverMedalItem: Identifiable, Equatable {
     var detailText: String
 }
 
+struct AppEvolutionMilestone: Identifiable, Equatable {
+    var id: Int { iter }
+    var iter: Int
+    var version: String
+    var title: String
+    var summary: String
+}
+
 extension Vehicle {
     var driverMedals: [DriverMedalItem] {
         let ecoUnlocked = isEV ? (avgConsumption <= 15.5) : (avgConsumption <= 8.5)
@@ -474,6 +482,29 @@ extension Vehicle {
 }
 
 enum SampleVehicles {
+    static let allTwentyIterations: [AppEvolutionMilestone] = [
+        AppEvolutionMilestone(iter: 20, version: "v3.0.0", title: "全局触感引擎 & 20版演进全景舱", summary: "四级物理 Taptic 反馈 + v1.0→v3.0 全量里程碑图谱 + 旗舰归档"),
+        AppEvolutionMilestone(iter: 19, version: "v2.9.0", title: "车主荣誉勋章馆 & 黄金右脚评级", summary: "动态解锁 5 大荣誉勋章，打通违章/预算实时点亮闭环"),
+        AppEvolutionMilestone(iter: 18, version: "v2.8.0", title: "iOS 27 桌面组件 & 灵动岛预览馆", summary: "1:1 灵动岛驻车/闪充双态胶囊 + 小号/中号/锁屏圆环组件"),
+        AppEvolutionMilestone(iter: 17, version: "v2.7.0", title: "CSV/JSON导出 & 卖车精品履历", summary: "一键生成闲鱼/懂车帝一手素车背书文案与系统原生分享"),
+        AppEvolutionMilestone(iter: 16, version: "v2.6.0", title: "全局账单聚光灯搜索 & 动态求和", summary: "时间轴多维热词检索 + 筛选结果实时笔数与金额聚合"),
+        AppEvolutionMilestone(iter: 15, version: "v2.5.0", title: "数字证件保险箱 & 防窥脱敏护盾", summary: "四证合一卡包矩阵，支持防截图泄密脱敏与一键复制"),
+        AppEvolutionMilestone(iter: 14, version: "v2.4.0", title: "驾驶证12分周期环 & 学法减分", summary: "12格流光分值表 + 未缴违章一键入账 + 12123学法减分"),
+        AppEvolutionMilestone(iter: 13, version: "v2.3.0", title: "智慧寻车记忆牌 & 停车计费沙漏", summary: "地库楼层桩号锁定 + 阶梯计费预估 + 离场自动记账"),
+        AppEvolutionMilestone(iter: 12, version: "v2.2.0", title: "补能站点品牌耐烧榜 & 单价复盘", summary: "聚合壳牌/中石化/换电站实测百公里能耗与点击筛选"),
+        AppEvolutionMilestone(iter: 11, version: "v2.1.0", title: "四季气候与极端天气智能养护引擎", summary: "春夏秋冬油电差异化养护清单与自检加分打卡"),
+        AppEvolutionMilestone(iter: 10, version: "v2.0.0", title: "车库双车横向对比 PK 实验室", summary: "油车 vs 电车 6 大核心财务与能耗指标同屏对标"),
+        AppEvolutionMilestone(iter: 9, version: "v1.9.0", title: "随车精品装备与改装资产陈列柜", summary: "车衣/太阳膜/记录仪质保与合规徽章归档，记账自动入柜"),
+        AppEvolutionMilestone(iter: 8, version: "v1.8.0", title: "月度养车预算警戒雷达", summary: "三色流光进度条监控月度开支，支持四档预算循环切换"),
+        AppEvolutionMilestone(iter: 7, version: "v1.7.0", title: "新车提车 PDI 32项验车数字清单", summary: "漆膜/玻璃胎龄/铭牌/随车四联票据逐项核验归档"),
+        AppEvolutionMilestone(iter: 6, version: "v1.6.0", title: "事故应急救援 SOS & 6机位取证", summary: "双闪三角牌黄金法则 + 责任认定6机位 + 保险/交警直呼"),
+        AppEvolutionMilestone(iter: 5, version: "v1.5.0", title: "全周期时间轴账单二次编辑与纠错", summary: "支持任意历史账单点击检视、修改标题金额里程与安全删除"),
+        AppEvolutionMilestone(iter: 4, version: "v1.4.0", title: "5年残值折旧曲线与黄金换车顾问", summary: "油电差异化5年保值率柱状图与第3年最优换车窗口建议"),
+        AppEvolutionMilestone(iter: 3, version: "v1.3.0", title: "路况场景能耗拆解与行程路书", summary: "高速巡航/市区通勤/跑山露营三场景能耗对标与打卡"),
+        AppEvolutionMilestone(iter: 2, version: "v1.2.0", title: "购车金融分期与提前还款省息精算", summary: "月供进度追踪 + 一键记月供 + 提前结清省息试算器"),
+        AppEvolutionMilestone(iter: 1, version: "v1.1.0", title: "四轮独立胎压 TPMS 与胎纹矩阵", summary: "俯视底盘四轮气压/胎温/胎纹毫米级精调与标准充气校准")
+    ]
+
     static let defaultGearItems: [CarGearItem] = [
         CarGearItem(name: "XPEL LUX Plus 8.5mil 隐形车衣", category: "🛡️ 漆面保护", price: 6800, warrantyNote: "10年官方电子质保", legalBadge: "透明膜免备案"),
         CarGearItem(name: "龙膜后羿 70 前挡隔热太阳膜", category: "☀️ 隔热防晒", price: 1680, warrantyNote: "终身质保 · 不阻ETC", legalBadge: "透光率合规"),

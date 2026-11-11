@@ -92,6 +92,12 @@ struct ContentView: View {
                 .presentationDetents([.large])
                 .presentationCornerRadius(36)
         }
+        .sheet(isPresented: $store.evolutionHubPresented) {
+            EvolutionHubSheetView()
+                .environmentObject(store)
+                .presentationDetents([.large])
+                .presentationCornerRadius(36)
+        }
     }
 
     // MARK: - Top Liquid Glass Header Bar
@@ -112,6 +118,12 @@ struct ContentView: View {
                     }
                 }
                 Section("车库管理") {
+                    Button {
+                        store.evolutionHubPresented = true
+                    } label: {
+                        Label("v3.0 旗舰演进全景舱 (20版迭代)", systemImage: "sparkles")
+                    }
+
                     Button {
                         store.compareSheetPresented = true
                     } label: {
@@ -339,6 +351,7 @@ struct ContentView: View {
     private func tabBarItem(tab: AppTab, icon: String, title: String, isActiveOverride: Bool? = nil) -> some View {
         let isSelected = isActiveOverride ?? (store.activeTab == tab)
         return Button {
+            AutoHapticEngine.selection()
             withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                 store.activeTab = tab
             }
@@ -866,5 +879,124 @@ struct WidgetGallerySheetView: View {
                 .background(Capsule().fill(active ? AutoColor.cyan : Color.primary.opacity(0.08)))
         }
         .buttonStyle(.plain)
+    }
+}
+
+// MARK: - Iteration 20: v3.0 Flagship Evolution Hub & Global Taptic Console
+struct EvolutionHubSheetView: View {
+    @EnvironmentObject var store: VehicleStore
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 14) {
+                    // 1. Flagship v3.0.0 Hero Card
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Text("🚀 车记 AutoLog · v3.0.0")
+                                .font(.system(size: 18, weight: .heavy, design: .rounded))
+                            Spacer()
+                            StatusChip(text: "Build 21 · 20次迭代达成", color: AutoColor.emerald, showDot: true)
+                        }
+                        Text("从 v1.0.0 初代原型出发，连续完成 20 个版本的业务、UI 与 UX 闭环进化，全面覆盖买车、贷款、PDI验车、停车、补能、胎压、四季养护、车险、脱敏证件、二手卖车履历与灵动岛生态。")
+                            .font(.system(size: 11.5))
+                            .foregroundStyle(.secondary)
+                    }
+                    .liquidGlassCard(cornerRadius: 26, tint: AutoColor.accentOrange)
+
+                    // 2. Global Taptic Haptic Console
+                    VStack(alignment: .leading, spacing: 10) {
+                        Toggle(isOn: $store.hapticsEnabled) {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("📳 全局物理触感引擎 (Taptic Engine)")
+                                    .font(.system(size: 13.5, weight: .bold))
+                                Text("切车、切栏、拉起记账与成功归档时触发果味细腻震动")
+                                    .font(.system(size: 11))
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                        .tint(AutoColor.accentOrange)
+
+                        HStack(spacing: 8) {
+                            Button {
+                                AutoHapticEngine.selection()
+                            } label: {
+                                Text("轻触 Selection")
+                                    .font(.system(size: 11, weight: .bold))
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 7)
+                                    .background(Color.primary.opacity(0.07), in: Capsule())
+                            }
+                            .buttonStyle(.plain)
+
+                            Button {
+                                AutoHapticEngine.impact(.rigid)
+                            } label: {
+                                Text("机械 Impact")
+                                    .font(.system(size: 11, weight: .bold))
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 7)
+                                    .background(AutoColor.cyan.opacity(0.15), in: Capsule())
+                                    .foregroundStyle(AutoColor.cyan)
+                            }
+                            .buttonStyle(.plain)
+
+                            Button {
+                                AutoHapticEngine.success()
+                            } label: {
+                                Text("归档 Success")
+                                    .font(.system(size: 11, weight: .bold))
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 7)
+                                    .background(AutoColor.emerald.opacity(0.15), in: Capsule())
+                                    .foregroundStyle(AutoColor.emerald)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                    .liquidGlassCard(cornerRadius: 24, tint: AutoColor.cyan)
+
+                    // 3. Complete 20-Iteration Milestone Stream
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("🧬 v1.1.0 → v3.0.0 二十次自我迭代全记录")
+                            .font(.system(size: 14, weight: .bold))
+
+                        ForEach(SampleVehicles.allTwentyIterations) { item in
+                            HStack(alignment: .top, spacing: 10) {
+                                Text(item.version)
+                                    .font(.system(size: 10.5, weight: .heavy, design: .monospaced))
+                                    .foregroundStyle(.white)
+                                    .padding(.horizontal, 7)
+                                    .padding(.vertical, 3.5)
+                                    .background(
+                                        Capsule().fill(item.iter == 20 ? AutoColor.accentOrange : AutoColor.purple.opacity(0.82))
+                                    )
+
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Iter \(String(format: "%02d", item.iter)) · \(item.title)")
+                                        .font(.system(size: 12.5, weight: .bold))
+                                    Text(item.summary)
+                                        .font(.system(size: 11))
+                                        .foregroundStyle(.secondary)
+                                }
+                                Spacer(minLength: 0)
+                            }
+                            .padding(10)
+                            .background(Color.primary.opacity(0.045), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                        }
+                    }
+                    .liquidGlassCard(cornerRadius: 28)
+                }
+                .padding(16)
+            }
+            .navigationTitle("🚀 v3.0 旗舰演进全景舱")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("完成") { dismiss() }
+                }
+            }
+        }
     }
 }
