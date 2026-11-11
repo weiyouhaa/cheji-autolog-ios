@@ -86,6 +86,12 @@ struct ContentView: View {
                 .presentationDetents([.large])
                 .presentationCornerRadius(36)
         }
+        .sheet(isPresented: $store.widgetGalleryPresented) {
+            WidgetGallerySheetView()
+                .environmentObject(store)
+                .presentationDetents([.large])
+                .presentationCornerRadius(36)
+        }
     }
 
     // MARK: - Top Liquid Glass Header Bar
@@ -110,6 +116,12 @@ struct ContentView: View {
                         store.compareSheetPresented = true
                     } label: {
                         Label("双车横向对比 PK 实验室", systemImage: "chart.bar.xaxis")
+                    }
+
+                    Button {
+                        store.widgetGalleryPresented = true
+                    } label: {
+                        Label("iOS 27 桌面组件与灵动岛预览", systemImage: "rectangle.3.group.fill")
                     }
 
                     Button {
@@ -178,7 +190,19 @@ struct ContentView: View {
             Spacer()
 
             // Right Orb Buttons
-            HStack(spacing: 8) {
+            HStack(spacing: 7) {
+                // Iteration 18: iOS 27 Widget & Dynamic Island Gallery Orb
+                Button {
+                    store.widgetGalleryPresented = true
+                } label: {
+                    Image(systemName: "rectangle.3.group.fill")
+                        .font(.system(size: 13, weight: .bold))
+                        .foregroundStyle(AutoColor.cyan)
+                        .frame(width: 35, height: 35)
+                        .background(orbBackground)
+                }
+                .buttonStyle(.plain)
+
                 // Theme Switcher Orb
                 Button {
                     withAnimation(.easeInOut(duration: 0.25)) {
@@ -601,6 +625,245 @@ struct DataExportSheetView: View {
                     Capsule()
                         .fill(active ? AutoColor.accentOrange : Color.clear)
                 )
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+// MARK: - Iteration 18: iOS 27 Desktop Widgets & Dynamic Island Live Activity Gallery
+struct WidgetGallerySheetView: View {
+    @EnvironmentObject var store: VehicleStore
+    @Environment(\.dismiss) private var dismiss
+    @State private var islandScene: Int = 0 // 0: 驻车寻车计费 | 1: 极速补能续航
+
+    var car: Vehicle { store.currentVehicle }
+
+    var body: some View {
+        NavigationStack {
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 16) {
+                    Text("实时同步「\(car.name)」当前里程、停放车位、百公里能耗与保养提醒，1:1 预览 iOS 27 灵动岛与桌面液态小组件。")
+                        .font(.system(size: 12))
+                        .foregroundStyle(.secondary)
+
+                    // 1. Dynamic Island Live Activity Preview
+                    VStack(alignment: .leading, spacing: 10) {
+                        HStack {
+                            Text("🏝️ 灵动岛实时活动 (Live Activity)")
+                                .font(.system(size: 13.5, weight: .bold))
+                            Spacer()
+                            HStack(spacing: 4) {
+                                islandPill(idx: 0, title: "🅿️ 驻车计费")
+                                islandPill(idx: 1, title: car.isEV ? "⚡ 闪充监控" : "⛽ 续航导航")
+                            }
+                        }
+
+                        // Pitch-black Dynamic Island Expanded Capsule
+                        VStack(spacing: 12) {
+                            HStack {
+                                HStack(spacing: 6) {
+                                    Circle()
+                                        .fill(islandScene == 0 ? AutoColor.cyan : AutoColor.emerald)
+                                        .frame(width: 8, height: 8)
+                                    Text(car.plate)
+                                        .font(.system(size: 11, weight: .heavy, design: .rounded))
+                                        .foregroundStyle(.white)
+                                    Text("· 车记 AutoLog")
+                                        .font(.system(size: 10.5, weight: .medium))
+                                        .foregroundStyle(.white.opacity(0.6))
+                                }
+                                Spacer()
+                                Text(islandScene == 0 ? "LIVE 驻车中" : "LIVE 补能中")
+                                    .font(.system(size: 10, weight: .heavy, design: .monospaced))
+                                    .foregroundStyle(islandScene == 0 ? AutoColor.cyan : AutoColor.emerald)
+                            }
+
+                            if islandScene == 0 {
+                                HStack {
+                                    VStack(alignment: .leading, spacing: 3) {
+                                        Text("\(car.parkingSession.floor) · \(car.parkingSession.zoneSpot)")
+                                            .font(.system(size: 20, weight: .heavy, design: .rounded))
+                                            .foregroundStyle(.white)
+                                        Text(car.parkingSession.lotName)
+                                            .font(.system(size: 11))
+                                            .foregroundStyle(.white.opacity(0.65))
+                                    }
+                                    Spacer()
+                                    VStack(alignment: .trailing, spacing: 3) {
+                                        Text("¥\(Int(car.parkingSession.estimatedFee))")
+                                            .font(.system(size: 21, weight: .heavy, design: .rounded))
+                                            .foregroundStyle(AutoColor.amber)
+                                        Text("已停 \(car.parkingSession.formattedDuration)")
+                                            .font(.system(size: 10.5, weight: .semibold))
+                                            .foregroundStyle(.white.opacity(0.65))
+                                    }
+                                }
+                            } else {
+                                VStack(spacing: 8) {
+                                    HStack {
+                                        Text(car.isEV ? "⚡ 500kW 超充 · SoC 84%" : "⛽ 满箱可用续航 635 km")
+                                            .font(.system(size: 15.5, weight: .heavy, design: .rounded))
+                                            .foregroundStyle(.white)
+                                        Spacer()
+                                        Text(car.isEV ? "剩 9 分钟满电" : "实测 \(String(format: "%.2f", car.avgConsumption))L")
+                                            .font(.system(size: 11.5, weight: .bold))
+                                            .foregroundStyle(AutoColor.emerald)
+                                    }
+                                    GeometryReader { geo in
+                                        ZStack(alignment: .leading) {
+                                            Capsule().fill(Color.white.opacity(0.16))
+                                            Capsule()
+                                                .fill(LinearGradient(colors: [AutoColor.emerald, AutoColor.cyan], startPoint: .leading, endPoint: .trailing))
+                                                .frame(width: geo.size.width * 0.84)
+                                        }
+                                    }
+                                    .frame(height: 7)
+                                }
+                            }
+                        }
+                        .padding(16)
+                        .background(
+                            RoundedRectangle(cornerRadius: 32, style: .continuous)
+                                .fill(Color.black)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 32, style: .continuous)
+                                        .strokeBorder(Color.white.opacity(0.22), lineWidth: 1.1)
+                                )
+                                .shadow(color: Color.black.opacity(0.45), radius: 16, x: 0, y: 8)
+                        )
+                    }
+
+                    // 2. Small 2x2 Home Widget + Lock Screen Circular Widget
+                    Text("🖼️ iOS 27 桌面与锁屏液态玻璃组件")
+                        .font(.system(size: 13.5, weight: .bold))
+
+                    HStack(spacing: 12) {
+                        // Small 2x2 Widget
+                        VStack(alignment: .leading, spacing: 7) {
+                            HStack {
+                                Text(car.plate)
+                                    .font(.system(size: 10, weight: .heavy, design: .rounded))
+                                    .foregroundStyle(.white)
+                                    .padding(.horizontal, 7)
+                                    .padding(.vertical, 2.5)
+                                    .background(AutoColor.accentOrange, in: Capsule())
+                                Spacer()
+                                Text("\(car.healthScore)分")
+                                    .font(.system(size: 10.5, weight: .bold))
+                                    .foregroundStyle(AutoColor.emerald)
+                            }
+                            Spacer(minLength: 2)
+                            Text("\(car.odometer.formatted())")
+                                .font(.system(size: 20, weight: .heavy, design: .monospaced))
+                            Text("总里程 km · 日均 \(String(format: "%.0f", car.dailyKm))")
+                                .font(.system(size: 10, weight: .medium))
+                                .foregroundStyle(.secondary)
+                            Text("能耗 \(String(format: "%.2f", car.avgConsumption)) \(car.consumptionUnit)")
+                                .font(.system(size: 10.5, weight: .bold))
+                                .foregroundStyle(AutoColor.cyan)
+                        }
+                        .frame(maxWidth: .infinity, minHeight: 132, alignment: .leading)
+                        .liquidGlassCard(cornerRadius: 26, tint: AutoColor.accentOrange)
+
+                        // Lock Screen Accessory Widget Card
+                        VStack(spacing: 8) {
+                            Text("锁屏实时圆环")
+                                .font(.system(size: 10.5, weight: .semibold))
+                                .foregroundStyle(.secondary)
+                            ZStack {
+                                Circle()
+                                    .stroke(Color.primary.opacity(0.14), lineWidth: 7)
+                                    .frame(width: 68, height: 68)
+                                Circle()
+                                    .trim(from: 0, to: CGFloat(car.healthScore) / 100.0)
+                                    .stroke(AutoColor.emerald, style: StrokeStyle(lineWidth: 7, lineCap: .round))
+                                    .rotationEffect(.degrees(-90))
+                                    .frame(width: 68, height: 68)
+                                VStack(spacing: 0) {
+                                    Text("\(car.healthScore)")
+                                        .font(.system(size: 17, weight: .heavy, design: .rounded))
+                                    Text("健康度")
+                                        .font(.system(size: 8.5, weight: .bold))
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                            Text("保单剩 \(car.insurance.daysRemaining) 天")
+                                .font(.system(size: 10, weight: .bold))
+                                .foregroundStyle(AutoColor.emerald)
+                        }
+                        .frame(width: 138, height: 132)
+                        .liquidGlassCard(cornerRadius: 26, tint: AutoColor.emerald)
+                    }
+
+                    // 3. Medium 4x2 Cockpit Desktop Widget with Deep-Link Actions
+                    VStack(alignment: .leading, spacing: 10) {
+                        HStack {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(car.name)
+                                    .font(.system(size: 15, weight: .heavy, design: .rounded))
+                                Text("🔔 \(car.nextAlert)")
+                                    .font(.system(size: 11, weight: .medium))
+                                    .foregroundStyle(.secondary)
+                            }
+                            Spacer()
+                            CarSilhouetteView(isEV: car.isEV)
+                                .frame(width: 105, height: 34)
+                        }
+
+                        HStack(spacing: 8) {
+                            Button {
+                                dismiss()
+                                store.openQuickLog(.fuel)
+                            } label: {
+                                Label(car.isEV ? "快记充换电" : "快记加油", systemImage: "bolt.fill")
+                                    .font(.system(size: 11.5, weight: .bold))
+                                    .foregroundStyle(.white)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 8)
+                                    .background(AutoColor.accentOrange, in: Capsule())
+                            }
+
+                            Button {
+                                dismiss()
+                                store.activeTab = .cockpit
+                                store.showToast("🅿️ 已定位至首页寻车记忆牌：\(car.parkingSession.floor) \(car.parkingSession.zoneSpot)")
+                            } label: {
+                                Label("\(car.parkingSession.floor) 寻车牌", systemImage: "parkingsign.circle.fill")
+                                    .font(.system(size: 11.5, weight: .bold))
+                                    .foregroundStyle(AutoColor.cyan)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 8)
+                                    .background(AutoColor.cyan.opacity(0.16), in: Capsule())
+                            }
+                        }
+                    }
+                    .liquidGlassCard(cornerRadius: 28, tint: AutoColor.cyan)
+                }
+                .padding(16)
+            }
+            .navigationTitle("✨ iOS 27 组件与灵动岛")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("完成") { dismiss() }
+                }
+            }
+        }
+    }
+
+    private func islandPill(idx: Int, title: String) -> some View {
+        let active = (islandScene == idx)
+        return Button {
+            withAnimation(.spring(response: 0.28, dampingFraction: 0.8)) {
+                islandScene = idx
+            }
+        } label: {
+            Text(title)
+                .font(.system(size: 10.5, weight: .bold))
+                .foregroundStyle(active ? .white : .secondary)
+                .padding(.horizontal, 9)
+                .padding(.vertical, 4.5)
+                .background(Capsule().fill(active ? AutoColor.cyan : Color.primary.opacity(0.08)))
         }
         .buttonStyle(.plain)
     }

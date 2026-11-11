@@ -26,6 +26,7 @@ final class VehicleStore: ObservableObject {
     @Published var addVehiclePresented: Bool = false
     @Published var compareSheetPresented: Bool = false
     @Published var exportSheetPresented: Bool = false
+    @Published var widgetGalleryPresented: Bool = false
     @Published var lifecycleFilter: String = "all"
     @Published var toastMessage: String? = nil
 
