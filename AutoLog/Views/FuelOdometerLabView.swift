@@ -2,8 +2,23 @@ import SwiftUI
 
 struct FuelOdometerLabView: View {
     @EnvironmentObject var store: VehicleStore
+    @State private var selectedBrandFilter: String? = nil
 
     var car: Vehicle { store.currentVehicle }
+
+    var displayedFuelLogs: [FuelLog] {
+        guard let brand = selectedBrandFilter else { return car.fuelLogs }
+        let keyword: String
+        if brand.contains("壳牌") { keyword = "壳牌" }
+        else if brand.contains("石化") { keyword = "中石化" }
+        else if brand.contains("石油") { keyword = "中石油" }
+        else if brand.contains("换电") { keyword = "换电" }
+        else if brand.contains("家充") { keyword = "家充" }
+        else if brand.contains("超充") { keyword = "超充" }
+        else { keyword = "" }
+        if keyword.isEmpty { return car.fuelLogs }
+        return car.fuelLogs.filter { $0.station.contains(keyword) }
+    }
 
     var body: some View {
         VStack(spacing: 12) {
@@ -65,11 +80,26 @@ struct FuelOdometerLabView: View {
             // 1.5 Iteration 03: Driving Scenario Analytics & Trip Logbook
             tripScenarioAnalyticsCard
 
+            // 1.8 Iteration 12: Station Brand Leaderboard & Price Analytics
+            stationLeaderboardCard
+
             // 2. Detailed Refueling / Charging Ledger
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
                     Text("🧾 每次\(car.isEV ? "充换电" : "加油")跳枪明细")
                         .font(.system(size: 14.5, weight: .bold))
+                    if let filter = selectedBrandFilter {
+                        Button {
+                            selectedBrandFilter = nil
+                        } label: {
+                            Text("\(filter) ✕")
+                                .font(.system(size: 10.5, weight: .bold))
+                                .foregroundStyle(AutoColor.cyan)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 3)
+                                .background(AutoColor.cyan.opacity(0.15), in: Capsule())
+                        }
+                    }
                     Spacer()
                     Button {
                         store.openQuickLog(.fuel)
@@ -84,7 +114,7 @@ struct FuelOdometerLabView: View {
                 }
 
                 VStack(spacing: 9) {
-                    ForEach(car.fuelLogs) { log in
+                    ForEach(displayedFuelLogs) { log in
                         VStack(alignment: .leading, spacing: 5) {
                             HStack {
                                 Text("\(log.date) · \(log.station)")
@@ -233,6 +263,73 @@ struct FuelOdometerLabView: View {
             )
         }
         .buttonStyle(.plain)
+    }
+
+    // MARK: - Iteration 12: Station Brand Leaderboard & Price Analytics Card
+    private var stationLeaderboardCard: some View {
+        let board = car.stationBrandLeaderboard
+        return VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Text("🏆 站点品牌耐烧榜与单价复盘")
+                    .font(.system(size: 14.5, weight: .bold))
+                Spacer()
+                Text("点击品牌筛选明细")
+                    .font(.system(size: 10.5, weight: .semibold))
+                    .foregroundStyle(.secondary)
+            }
+
+            VStack(spacing: 7) {
+                ForEach(Array(board.enumerated()), id: \.element.id) { idx, item in
+                    let isSelected = (selectedBrandFilter == item.brand)
+                    Button {
+                        withAnimation(.spring(response: 0.25, dampingFraction: 0.8)) {
+                            selectedBrandFilter = isSelected ? nil : item.brand
+                        }
+                    } label: {
+                        HStack {
+                            HStack(spacing: 7) {
+                                Text(idx == 0 ? "🥇" : (idx == 1 ? "🥈" : "⛽"))
+                                    .font(.system(size: 14))
+                                VStack(alignment: .leading, spacing: 1) {
+                                    HStack(spacing: 5) {
+                                        Text(item.brand)
+                                            .font(.system(size: 12.5, weight: .bold))
+                                        if idx == 0 {
+                                            Text("最耐跑")
+                                                .font(.system(size: 9.5, weight: .bold))
+                                                .foregroundStyle(AutoColor.emerald)
+                                                .padding(.horizontal, 5)
+                                                .padding(.vertical, 1.5)
+                                                .background(AutoColor.emerald.opacity(0.16), in: Capsule())
+                                        }
+                                    }
+                                    Text("加注 \(item.count) 次 · 均价 ¥\(String(format: "%.2f", item.avgPrice))/\(car.isEV ? "度" : "L")")
+                                        .font(.system(size: 10.5))
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                            Spacer()
+                            Text(String(format: "%.2f %@", item.avgConsumption, car.consumptionUnit))
+                                .font(.system(size: 13, weight: .heavy, design: .rounded))
+                                .foregroundStyle(idx == 0 ? AutoColor.emerald : AutoColor.amber)
+                                .monospacedDigit()
+                        }
+                        .padding(.horizontal, 11)
+                        .padding(.vertical, 9)
+                        .background(
+                            RoundedRectangle(cornerRadius: 15, style: .continuous)
+                                .fill(isSelected ? AutoColor.cyan.opacity(0.15) : Color.primary.opacity(0.045))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 15, style: .continuous)
+                                        .strokeBorder(isSelected ? AutoColor.cyan : Color.white.opacity(0.12), lineWidth: 1)
+                                )
+                        )
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
+        .liquidGlassCard(cornerRadius: 28)
     }
 }
 

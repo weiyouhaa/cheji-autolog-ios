@@ -280,6 +280,38 @@ struct ResaleYearProjection: Identifiable, Equatable {
     var advice: String
 }
 
+struct StationBrandSummary: Identifiable, Equatable {
+    var id: String { brand }
+    var brand: String
+    var count: Int
+    var avgPrice: Double
+    var avgConsumption: Double
+}
+
+extension Vehicle {
+    var stationBrandLeaderboard: [StationBrandSummary] {
+        guard !fuelLogs.isEmpty else { return [] }
+        var buckets: [String: [FuelLog]] = [:]
+        for log in fuelLogs {
+            let brand: String
+            if log.station.contains("壳牌") { brand = "壳牌 Shell" }
+            else if log.station.contains("中石化") { brand = "中国石化" }
+            else if log.station.contains("中石油") { brand = "中国石油" }
+            else if log.station.contains("换电") { brand = "蔚来换电站" }
+            else if log.station.contains("家充") { brand = "地库家充谷电" }
+            else if log.station.contains("超充") { brand = "高速超充桩" }
+            else { brand = "合作站点" }
+            buckets[brand, default: []].append(log)
+        }
+        return buckets.map { brand, logs in
+            let avgP = logs.reduce(0.0) { $0 + $1.price } / Double(logs.count)
+            let avgC = logs.reduce(0.0) { $0 + $1.consumption } / Double(logs.count)
+            return StationBrandSummary(brand: brand, count: logs.count, avgPrice: avgP, avgConsumption: avgC)
+        }
+        .sorted { $0.avgConsumption < $1.avgConsumption }
+    }
+}
+
 enum SampleVehicles {
     static let defaultGearItems: [CarGearItem] = [
         CarGearItem(name: "XPEL LUX Plus 8.5mil 隐形车衣", category: "🛡️ 漆面保护", price: 6800, warrantyNote: "10年官方电子质保", legalBadge: "透明膜免备案"),
