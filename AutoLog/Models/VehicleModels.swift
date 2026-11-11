@@ -365,7 +365,69 @@ struct DigitalDocumentItem: Identifiable, Equatable {
     var validityNote: String
 }
 
+struct DriverMedalItem: Identifiable, Equatable {
+    var id: String
+    var icon: String
+    var title: String
+    var tierLabel: String
+    var unlocked: Bool
+    var detailText: String
+}
+
 extension Vehicle {
+    var driverMedals: [DriverMedalItem] {
+        let ecoUnlocked = isEV ? (avgConsumption <= 15.5) : (avgConsumption <= 8.5)
+        let clubUnlocked = odometer >= 10000
+        let careUnlocked = healthScore >= 92
+        let cleanUnlocked = (licenseTracker.pendingCount == 0 && licenseTracker.remainingPoints >= 9)
+        let budgetUnlocked = currentMonthSpend <= monthlyBudgetTarget
+
+        return [
+            DriverMedalItem(
+                id: "eco_foot",
+                icon: "🦶",
+                title: "黄金右脚",
+                tierLabel: ecoUnlocked ? "S级节能" : "冲刺中",
+                unlocked: ecoUnlocked,
+                detailText: "长期实测百公里能耗 \(String(format: "%.2f", avgConsumption)) \(consumptionUnit)，优于同系车主 12%。"
+            ),
+            DriverMedalItem(
+                id: "10k_club",
+                icon: "🌍",
+                title: "万里征途",
+                tierLabel: clubUnlocked ? "\(odometer / 1000)k 达成" : "未满万公里",
+                unlocked: clubUnlocked,
+                detailText: "已安全陪伴行驶 \(odometer.formatted()) km（共 \(daysOwned) 天），跨越山海从不掉链。"
+            ),
+            DriverMedalItem(
+                id: "mint_care",
+                icon: "⚙️",
+                title: "满血精养",
+                tierLabel: careUnlocked ? "\(healthScore)分巅峰" : "待保养",
+                unlocked: careUnlocked,
+                detailText: "全车综合健康度 \(healthScore)/100 分，核心油液与易损件均处于黄金寿命区间。"
+            ),
+            DriverMedalItem(
+                id: "zero_violation",
+                icon: "🛡️",
+                title: "清朗合规",
+                tierLabel: cleanUnlocked ? "0违章清零" : "待处理 \(licenseTracker.pendingCount) 条",
+                unlocked: cleanUnlocked,
+                detailText: cleanUnlocked
+                    ? "所有历史交通违章均已结清，驾照可用 \(licenseTracker.remainingPoints) 分，无忧过检。"
+                    : "当前仍有 \(licenseTracker.pendingCount) 条违章未缴清，前往「车险合规」一键缴款即可点亮勋章！"
+            ),
+            DriverMedalItem(
+                id: "budget_pro",
+                icon: "💎",
+                title: "精明管家",
+                tierLabel: budgetUnlocked ? "预算受控" : "本月超支",
+                unlocked: budgetUnlocked,
+                detailText: "本月养车支出 ¥\(Int(currentMonthSpend)) / 预算上限 ¥\(Int(monthlyBudgetTarget))，每分钱花在刀刃上。"
+            )
+        ]
+    }
+
     var digitalDocuments: [DigitalDocumentItem] {
         let maskedVin: String = {
             guard vin.count >= 8 else { return "••••••••" }

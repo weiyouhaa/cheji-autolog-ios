@@ -3,6 +3,7 @@ import SwiftUI
 struct CockpitHomeView: View {
     @EnvironmentObject var store: VehicleStore
     @State private var showParkingEditSheet = false
+    @State private var selectedMedalId: String = "eco_foot"
 
     var car: Vehicle { store.currentVehicle }
 
@@ -297,6 +298,9 @@ struct CockpitHomeView: View {
             // 2.6 Iteration 13: Smart Parking Locator & Meter Timer Card
             smartParkingLocatorCard
 
+            // 2.8 Iteration 19: Driver Achievements & Eco-Score Medals Card
+            driverMedalShowcaseCard
+
             // 3. Recent Lifecycle Stream Preview
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
@@ -514,6 +518,85 @@ struct CockpitHomeView: View {
                 .presentationDetents([.height(340)])
                 .presentationCornerRadius(32)
         }
+    }
+
+    // MARK: - Iteration 19: Driver Achievements & Eco-Score Medal Showcase Card
+    private var driverMedalShowcaseCard: some View {
+        let medals = car.driverMedals
+        let unlockedCount = medals.filter(\.unlocked).count
+        let activeMedal = medals.first(where: { $0.id == selectedMedalId }) ?? medals[0]
+
+        return VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Text("🏅 车主荣誉勋章馆")
+                    .font(.system(size: 14, weight: .bold))
+                Spacer()
+                StatusChip(text: "已点亮 \(unlockedCount)/\(medals.count) 枚", color: AutoColor.amber)
+            }
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(medals) { medal in
+                        let isSelected = (medal.id == activeMedal.id)
+                        Button {
+                            withAnimation(.spring(response: 0.26, dampingFraction: 0.8)) {
+                                selectedMedalId = medal.id
+                            }
+                        } label: {
+                            VStack(spacing: 4) {
+                                Text(medal.icon)
+                                    .font(.system(size: 20))
+                                    .saturation(medal.unlocked ? 1.0 : 0.05)
+                                    .opacity(medal.unlocked ? 1.0 : 0.5)
+                                Text(medal.title)
+                                    .font(.system(size: 11, weight: .bold))
+                                    .foregroundStyle(medal.unlocked ? .primary : .secondary)
+                                Text(medal.tierLabel)
+                                    .font(.system(size: 9.5, weight: .bold, design: .rounded))
+                                    .foregroundStyle(medal.unlocked ? AutoColor.amber : .secondary)
+                            }
+                            .frame(width: 78)
+                            .padding(.vertical, 9)
+                            .background(
+                                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                    .fill(medal.unlocked ? AutoColor.amber.opacity(0.11) : Color.primary.opacity(0.04))
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                            .strokeBorder(
+                                                isSelected ? AutoColor.amber : Color.white.opacity(0.14),
+                                                lineWidth: isSelected ? 1.5 : 1
+                                            )
+                                    )
+                            )
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+            }
+
+            HStack(spacing: 8) {
+                Text(activeMedal.detailText)
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                Spacer(minLength: 0)
+                if !activeMedal.unlocked && activeMedal.id == "zero_violation" {
+                    Button {
+                        store.activeTab = .insurance
+                    } label: {
+                        Text("去点亮 ›")
+                            .font(.system(size: 11, weight: .bold))
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 9)
+                            .padding(.vertical, 5)
+                            .background(AutoColor.accentOrange, in: Capsule())
+                    }
+                }
+            }
+            .padding(10)
+            .background(Color.primary.opacity(0.045), in: RoundedRectangle(cornerRadius: 13, style: .continuous))
+        }
+        .liquidGlassCard(cornerRadius: 26, tint: AutoColor.amber)
     }
 }
 
