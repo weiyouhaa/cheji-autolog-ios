@@ -361,7 +361,16 @@ struct LifecycleTCOView: View {
                 Text("📉 5年残值预测与黄金换车顾问")
                     .font(.system(size: 14.5, weight: .bold))
                 Spacer()
-                StatusChip(text: "第3年最优换车拐点", color: AutoColor.emerald)
+                Button {
+                    store.exportSheetPresented = true
+                } label: {
+                    Text("📤 生成卖车履历")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundStyle(AutoColor.emerald)
+                        .padding(.horizontal, 9)
+                        .padding(.vertical, 4)
+                        .background(AutoColor.emerald.opacity(0.15), in: Capsule())
+                }
             }
 
             // 5-Year Bar & Selector Strip

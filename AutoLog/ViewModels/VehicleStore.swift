@@ -25,10 +25,11 @@ final class VehicleStore: ObservableObject {
     @Published var selectedQuickLogCategory: QuickLogCategory = .fuel
     @Published var addVehiclePresented: Bool = false
     @Published var compareSheetPresented: Bool = false
+    @Published var exportSheetPresented: Bool = false
     @Published var lifecycleFilter: String = "all"
     @Published var toastMessage: String? = nil
 
-    private let storageKey = "autolog_vehicles_v1"
+    private let storageKey = "autolog_vehicles_v3"
 
     init() {
         loadFromStorage()
@@ -335,6 +336,53 @@ final class VehicleStore: ObservableObject {
         car.insurance.compliance.violations = "\(pending) 条未处理 · 驾驶证剩余 \(car.licenseTracker.remainingPoints) 分"
         currentVehicle = car
         showToast("🎓 12123 学法减分 +1分成功！当前可用 \(car.licenseTracker.remainingPoints)/12 分")
+    }
+
+    // MARK: - Iteration 17: CSV/JSON Export & Second-Hand Resale Resume Generator
+    func generateResaleResumeText() -> String {
+        let c = currentVehicle
+        let gearList = c.purchase.gearItems.map { "• \($0.name) (价值 ¥\(Int($0.price)))" }.joined(separator: "\n")
+        let maintList = c.serviceRecords.prefix(4).map { "• \($0.date) @ \($0.odo)km：\($0.type) (\($0.shop))" }.joined(separator: "\n")
+        return """
+        【个人一手精品车 · 车记AutoLog认证履历】
+        🚗 车型：\(c.fullName)
+        🎨 外观内饰：\(c.colorName)
+        📅 上牌日期：\(c.purchaseDate)（一手自用 \(c.daysOwned) 天）
+        🛣️ 实表里程：\(c.odometer.formatted()) km（日均 \(String(format: "%.1f", c.dailyKm)) km，无调表担保）
+        ⛽ 长期实测能耗：\(String(format: "%.2f", c.avgConsumption)) \(c.consumptionUnit)（全程黄金右脚温和驾驶）
+        🛡️ 出险与车况：健康评分 \(c.healthScore)/100 分 · 保费系数 \(c.insurance.ncdFactor) · 保险至 \(c.insurance.expireDate)
+
+        🔧 历史核心维保记录（票据齐全）：
+        \(maintList.isEmpty ? "• 全程按时官方授权中心保养" : maintList)
+
+        ✨ 随车附赠精品装备（不拆卖白送）：
+        \(gearList.isEmpty ? "• 全车原版原漆素车状态" : gearList)
+
+        💰 落地总投入：¥\(Int(c.purchase.totalLanded).formatted())
+        🤝 诚意转让参考价：¥\(Int(c.purchase.estimatedResale).formatted())（支持任何第三方机构检测）
+        """
+    }
+
+    func generateCSVExportText() -> String {
+        let c = currentVehicle
+        var lines = ["日期,分类,事项标题,支出金额,表显里程,明细标签"]
+        for ev in c.timeline {
+            let safeTitle = ev.title.replacingOccurrences(of: ",", with: " ")
+            let safeOdo = ev.odo.replacingOccurrences(of: ",", with: "")
+            let safeTags = ev.tags.joined(separator: " | ").replacingOccurrences(of: ",", with: " ")
+            lines.append("\(ev.date),\(ev.cat),\(safeTitle),\(ev.cost),\(safeOdo),\(safeTags)")
+        }
+        return lines.joined(separator: "\n")
+    }
+
+    func generateJSONBackupText() -> String {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+        guard let data = try? encoder.encode(currentVehicle),
+              let str = String(data: data, encoding: .utf8) else {
+            return "{}"
+        }
+        return str
     }
 
     // MARK: - 1. Add Fuel / Charging Log

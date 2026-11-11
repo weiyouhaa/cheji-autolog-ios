@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct ContentView: View {
     @EnvironmentObject var store: VehicleStore
@@ -79,6 +80,12 @@ struct ContentView: View {
                 .presentationDetents([.large])
                 .presentationCornerRadius(36)
         }
+        .sheet(isPresented: $store.exportSheetPresented) {
+            DataExportSheetView()
+                .environmentObject(store)
+                .presentationDetents([.large])
+                .presentationCornerRadius(36)
+        }
     }
 
     // MARK: - Top Liquid Glass Header Bar
@@ -103,6 +110,12 @@ struct ContentView: View {
                         store.compareSheetPresented = true
                     } label: {
                         Label("双车横向对比 PK 实验室", systemImage: "chart.bar.xaxis")
+                    }
+
+                    Button {
+                        store.exportSheetPresented = true
+                    } label: {
+                        Label("导出账单 & 二手卖车履历...", systemImage: "square.and.arrow.up")
                     }
 
                     Button {
@@ -465,5 +478,130 @@ struct GarageCompareSheetView: View {
             }
             .monospacedDigit()
         }
+    }
+}
+
+// MARK: - Iteration 17: CSV/JSON Export & Second-Hand Resale Resume Sheet
+struct DataExportSheetView: View {
+    @EnvironmentObject var store: VehicleStore
+    @Environment(\.dismiss) private var dismiss
+    @State private var selectedFormat: Int = 0 // 0: 卖车履历 | 1: CSV | 2: JSON
+
+    private var previewContent: String {
+        switch selectedFormat {
+        case 0: return store.generateResaleResumeText()
+        case 1: return store.generateCSVExportText()
+        default: return store.generateJSONBackupText()
+        }
+    }
+
+    var body: some View {
+        NavigationStack {
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 14) {
+                    Text("将多年真实记账沉淀转化为「个人一手精品车背书文案」，或导出为电子表格/JSON 归档备份。")
+                        .font(.system(size: 12))
+                        .foregroundStyle(.secondary)
+
+                    // 3-Mode Liquid Glass Switcher
+                    HStack(spacing: 6) {
+                        modeButton(idx: 0, title: "🎖️ 卖车精品履历")
+                        modeButton(idx: 1, title: "📊 CSV 表格账单")
+                        modeButton(idx: 2, title: "📦 JSON 全量包")
+                    }
+                    .padding(4)
+                    .background(Color.primary.opacity(0.06), in: Capsule())
+
+                    // Code / Document Preview Window
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Text(selectedFormat == 0 ? "闲鱼 / 懂车帝 / 车友群挂牌文案预览" : (selectedFormat == 1 ? "Excel / Numbers 兼容 CSV 预览" : "AutoLog 结构化 JSON 档案预览"))
+                                .font(.system(size: 11.5, weight: .bold))
+                                .foregroundStyle(.secondary)
+                            Spacer()
+                            Text("\(previewContent.count) 字符")
+                                .font(.system(size: 10.5, weight: .semibold, design: .monospaced))
+                                .foregroundStyle(.tertiary)
+                        }
+
+                        ScrollView(.vertical, showsIndicators: true) {
+                            Text(previewContent)
+                                .font(.system(size: 11.5, weight: .medium, design: selectedFormat == 0 ? .rounded : .monospaced))
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .textSelection(.enabled)
+                        }
+                        .frame(height: 310)
+                        .padding(12)
+                        .background(
+                            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                .fill(Color.primary.opacity(0.05))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                        .strokeBorder(Color.white.opacity(0.15), lineWidth: 1)
+                                )
+                        )
+                    }
+                    .liquidGlassCard(cornerRadius: 26, tint: AutoColor.accentOrange)
+
+                    HStack(spacing: 10) {
+                        Button {
+                            UIPasteboard.general.string = previewContent
+                            store.showToast("📋 已复制全文至剪贴板，可直接粘贴发布！")
+                            dismiss()
+                        } label: {
+                            HStack(spacing: 5) {
+                                Image(systemName: "doc.on.doc.fill")
+                                Text("一键复制全文")
+                            }
+                            .font(.system(size: 13.5, weight: .bold))
+                            .foregroundStyle(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 13)
+                            .background(AutoColor.accentOrange, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+                        }
+
+                        ShareLink(item: previewContent) {
+                            HStack(spacing: 5) {
+                                Image(systemName: "square.and.arrow.up")
+                                Text("系统分享/存文件")
+                            }
+                            .font(.system(size: 13.5, weight: .bold))
+                            .foregroundStyle(AutoColor.cyan)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 13)
+                            .background(AutoColor.cyan.opacity(0.16), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+                        }
+                    }
+                }
+                .padding(16)
+            }
+            .navigationTitle("📤 导出备份与卖车履历")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("完成") { dismiss() }
+                }
+            }
+        }
+    }
+
+    private func modeButton(idx: Int, title: String) -> some View {
+        let active = (selectedFormat == idx)
+        return Button {
+            withAnimation(.spring(response: 0.25, dampingFraction: 0.82)) {
+                selectedFormat = idx
+            }
+        } label: {
+            Text(title)
+                .font(.system(size: 11.5, weight: .bold))
+                .foregroundStyle(active ? .white : .secondary)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 8)
+                .background(
+                    Capsule()
+                        .fill(active ? AutoColor.accentOrange : Color.clear)
+                )
+        }
+        .buttonStyle(.plain)
     }
 }
